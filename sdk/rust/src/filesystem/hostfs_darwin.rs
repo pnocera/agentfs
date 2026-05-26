@@ -4,7 +4,10 @@
 //! O_PATH file descriptors. macOS doesn't support O_PATH or AT_EMPTY_PATH,
 //! so we use a path-based approach similar to libfuse's passthrough.c example.
 
-use super::{BoxedFile, DirEntry, File, FileSystem, FilesystemStats, FsError, Stats, TimeChange};
+use super::{
+    device_major, device_minor, make_device, BoxedFile, DirEntry, File, FileSystem,
+    FilesystemStats, FsError, Stats, TimeChange,
+};
 use crate::error::{Error, Result};
 use async_trait::async_trait;
 use std::collections::HashMap;
@@ -164,7 +167,10 @@ fn stat_to_stats(stat: &libc::stat) -> Stats {
         atime_nsec: stat.st_atime_nsec as u32,
         mtime_nsec: stat.st_mtime_nsec as u32,
         ctime_nsec: stat.st_ctime_nsec as u32,
-        rdev: stat.st_rdev as u64,
+        rdev: make_device(
+            libc::major(stat.st_rdev as libc::dev_t) as u32,
+            libc::minor(stat.st_rdev as libc::dev_t) as u32,
+        ),
     }
 }
 
@@ -711,8 +717,14 @@ impl FileSystem for HostFS {
         let c_path = CString::new(new_path.as_os_str().as_bytes())
             .map_err(|_| Error::Internal("invalid path".to_string()))?;
 
-        let result =
-            unsafe { libc::mknod(c_path.as_ptr(), mode as libc::mode_t, rdev as libc::dev_t) };
+        let platform_rdev = libc::makedev(device_major(rdev) as _, device_minor(rdev) as _);
+        let result = unsafe {
+            libc::mknod(
+                c_path.as_ptr(),
+                mode as libc::mode_t,
+                platform_rdev as libc::dev_t,
+            )
+        };
         if result < 0 {
             let err = std::io::Error::last_os_error();
             if err.raw_os_error() == Some(libc::EEXIST) {

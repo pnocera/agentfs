@@ -1,0 +1,9 @@
+Command: cmd /c call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && set PATH=C:\Program Files\LLVM\bin;%PATH% && cargo check --target x86_64-pc-windows-msvc
+Working directory: F:\Tools\agentfs\cli
+Environment: VS 2022 BuildTools vcvars64 plus C:\Program Files\LLVM\bin for clang-cl.exe
+Started: 
+2026-05-26T09:50:28.2806787+02:00
+
+    Checking agentfs v0.6.4 (F:\Tools\agentfs\cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.28s
+ExitCode: 0

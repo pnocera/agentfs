@@ -6,8 +6,6 @@
 
 use std::sync::Arc;
 
-use libc::{O_RDONLY, O_RDWR};
-
 use crate::nfsserve::nfs::{
     fattr3, fileid3, filename3, ftype3, nfspath3, nfsstat3, nfstime3, sattr3, set_atime, set_gid3,
     set_mode3, set_mtime, set_size3, set_uid3, specdata3,
@@ -16,8 +14,8 @@ use crate::nfsserve::vfs::{auth_unix, DirEntry, NFSFileSystem, ReadDirResult, VF
 use agentfs_sdk::error::Error as SdkError;
 use agentfs_sdk::filesystem::FsError;
 use agentfs_sdk::{
-    FileSystem, Stats, TimeChange, S_IFBLK, S_IFCHR, S_IFDIR, S_IFIFO, S_IFLNK, S_IFMT, S_IFREG,
-    S_IFSOCK,
+    device_major, device_minor, make_device, FileSystem, Stats, TimeChange, OPEN_READONLY,
+    OPEN_READWRITE, S_IFBLK, S_IFCHR, S_IFDIR, S_IFIFO, S_IFLNK, S_IFMT, S_IFREG, S_IFSOCK,
 };
 use async_trait::async_trait;
 use tokio::sync::Mutex;
@@ -78,8 +76,8 @@ impl AgentNFS {
 
         // Extract major/minor from rdev for device files
         let rdev = specdata3 {
-            specdata1: libc::major(stats.rdev as libc::dev_t) as u32,
-            specdata2: libc::minor(stats.rdev as libc::dev_t) as u32,
+            specdata1: device_major(stats.rdev),
+            specdata2: device_minor(stats.rdev),
         };
 
         fattr3 {
@@ -199,7 +197,10 @@ impl NFSFileSystem for AgentNFS {
 
         // Handle size change (truncate)
         if let set_size3::size(size) = setattr.size {
-            let file = fs.open(fs_ino, O_RDWR).await.map_err(error_to_nfsstat)?;
+            let file = fs
+                .open(fs_ino, OPEN_READWRITE)
+                .await
+                .map_err(error_to_nfsstat)?;
             file.truncate(size).await.map_err(error_to_nfsstat)?;
         }
 
@@ -239,7 +240,7 @@ impl NFSFileSystem for AgentNFS {
         let fs = self.fs.lock().await;
 
         let file = fs
-            .open(id_to_fs_ino(id), O_RDONLY)
+            .open(id_to_fs_ino(id), OPEN_READONLY)
             .await
             .map_err(|_| nfsstat3::NFS3ERR_NOENT)?;
         let data = file
@@ -258,7 +259,7 @@ impl NFSFileSystem for AgentNFS {
         let fs = self.fs.lock().await;
 
         let file = fs
-            .open(id_to_fs_ino(id), O_RDWR)
+            .open(id_to_fs_ino(id), OPEN_READWRITE)
             .await
             .map_err(error_to_nfsstat)?;
         file.pwrite(offset, data).await.map_err(error_to_nfsstat)?;
@@ -385,7 +386,7 @@ impl NFSFileSystem for AgentNFS {
         };
 
         // Convert rdev from specdata3 (major/minor) to u64
-        let rdev_val = libc::makedev(rdev.specdata1 as _, rdev.specdata2 as _) as u64;
+        let rdev_val = make_device(rdev.specdata1, rdev.specdata2);
 
         let fs = self.fs.lock().await;
 
@@ -559,5 +560,20 @@ impl NFSFileSystem for AgentNFS {
             .ok_or(nfsstat3::NFS3ERR_NOENT)?;
 
         Ok(target.into_bytes().into())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn device_encoding_round_trips_major_minor() {
+        for (major, minor) in [(0, 0), (1, 5), (8, 1), (259, 65_536), (0x12_345, 0x23_456)] {
+            let dev = make_device(major, minor);
+
+            assert_eq!(device_major(dev), major);
+            assert_eq!(device_minor(dev), minor);
+        }
     }
 }

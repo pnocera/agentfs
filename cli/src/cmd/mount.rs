@@ -1,15 +1,21 @@
-use agentfs_sdk::{error::Error as SdkError, AgentFSOptions, FileSystem, HostFS, OverlayFS};
-use anyhow::{Context, Result};
-use std::{
-    path::{Path, PathBuf},
-    process::Command,
-    sync::Arc,
-};
+use agentfs_sdk::{error::Error as SdkError, AgentFSOptions, FileSystem};
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+use agentfs_sdk::{HostFS, OverlayFS};
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+use anyhow::Context;
+use anyhow::Result;
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+use std::path::Path;
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+use std::process::Command;
+use std::{path::PathBuf, sync::Arc};
 use tokio::sync::Mutex;
 use turso::value::Value;
 
 use crate::mount::{mount_fs, MountOpts};
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 use crate::nfs::AgentNFS;
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 use crate::nfsserve::tcp::NFSTcp;
 
 #[cfg(target_os = "linux")]
@@ -20,7 +26,6 @@ use std::{
     os::unix::fs::MetadataExt,
 };
 
-#[cfg(target_os = "linux")]
 use crate::cmd::init::open_agentfs;
 #[cfg(target_os = "linux")]
 use crate::fuse::FuseMountOptions;
@@ -28,6 +33,7 @@ use crate::fuse::FuseMountOptions;
 pub use crate::opts::MountBackend;
 
 /// Default NFS port to try (use a high port to avoid needing root)
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 const DEFAULT_NFS_PORT: u32 = 11111;
 
 /// Arguments for the mount command.
@@ -73,6 +79,25 @@ pub fn mount(args: MountArgs) -> Result<()> {
             anyhow::bail!(
                 "FUSE mounting is not supported on macOS.\n\
                  Use --backend nfs (default) or `agentfs nfs` instead."
+            );
+        }
+        MountBackend::Nfs => {
+            let rt = crate::get_runtime();
+            rt.block_on(mount_nfs_backend(args))
+        }
+    }
+}
+
+/// Mount the agent filesystem (Windows).
+#[cfg(target_os = "windows")]
+pub fn mount(args: MountArgs) -> Result<()> {
+    match args.backend {
+        MountBackend::Fuse => {
+            anyhow::bail!("FUSE mounting is not supported on Windows. Use --backend nfs instead.");
+        }
+        MountBackend::Nfs if !args.foreground => {
+            anyhow::bail!(
+                "Windows NFS mounts must run in foreground mode (-f/--foreground) so the AgentFS NFS server remains alive."
             );
         }
         MountBackend::Nfs => {
@@ -197,15 +222,17 @@ fn mount_fuse(args: MountArgs) -> Result<()> {
 
 /// Mount the agent filesystem using NFS over localhost.
 async fn mount_nfs_backend(args: MountArgs) -> Result<()> {
-    use crate::cmd::init::open_agentfs;
-
     let opts = AgentFSOptions::resolve(&args.id_or_path)?;
 
+    #[cfg(not(target_os = "windows"))]
     if !args.mountpoint.exists() {
         anyhow::bail!("Mountpoint does not exist: {}", args.mountpoint.display());
     }
 
+    #[cfg(not(target_os = "windows"))]
     let mountpoint = std::fs::canonicalize(args.mountpoint.clone())?;
+    #[cfg(target_os = "windows")]
+    let mountpoint = args.mountpoint.clone();
 
     let fsname = format!(
         "agentfs:{}",
@@ -246,13 +273,23 @@ async fn mount_nfs_backend(args: MountArgs) -> Result<()> {
         }
     }; // conn is dropped here
 
-    let fs: Arc<Mutex<dyn FileSystem + Send>> = if let Some(base_path) = base_path {
-        // Create OverlayFS with HostFS base, loading existing whiteouts
-        eprintln!("Using overlay filesystem with base: {}", base_path);
-        let hostfs = HostFS::new(&base_path)?;
-        let overlay = OverlayFS::new(Arc::new(hostfs), agentfs.fs);
-        overlay.load().await?; // Load persisted whiteouts and origin mappings
-        Arc::new(Mutex::new(overlay)) as Arc<Mutex<dyn FileSystem + Send>>
+    let fs: Arc<Mutex<dyn FileSystem + Send>> = if let Some(_base_path) = base_path {
+        #[cfg(target_os = "windows")]
+        {
+            anyhow::bail!(
+                "overlay-backed mounts require Windows HostFS support; direct AgentFS mounts are supported"
+            );
+        }
+
+        #[cfg(not(target_os = "windows"))]
+        {
+            // Create OverlayFS with HostFS base, loading existing whiteouts
+            eprintln!("Using overlay filesystem with base: {}", _base_path);
+            let hostfs = HostFS::new(&_base_path)?;
+            let overlay = OverlayFS::new(Arc::new(hostfs), agentfs.fs);
+            overlay.load().await?; // Load persisted whiteouts and origin mappings
+            Arc::new(Mutex::new(overlay)) as Arc<Mutex<dyn FileSystem + Send>>
+        }
     } else {
         // Plain AgentFS
         Arc::new(Mutex::new(agentfs.fs)) as Arc<Mutex<dyn FileSystem + Send>>
@@ -281,40 +318,51 @@ async fn mount_nfs_backend(args: MountArgs) -> Result<()> {
 
         // Handle drops automatically when we exit this scope
     } else {
-        // Daemon mode: use manual NFS server setup for persistent background operation
-        let nfs = AgentNFS::new(fs);
-        let port = find_available_port(DEFAULT_NFS_PORT)?;
+        #[cfg(target_os = "windows")]
+        {
+            anyhow::bail!(
+                "Windows NFS mounts must run in foreground mode (-f/--foreground) so the AgentFS NFS server remains alive."
+            );
+        }
 
-        let bind_addr = format!("127.0.0.1:{}", port);
-        let listener = crate::nfsserve::tcp::NFSTcpListener::bind(&bind_addr, nfs)
-            .await
-            .context("Failed to bind NFS server")?;
+        #[cfg(not(target_os = "windows"))]
+        {
+            // Daemon mode: use manual NFS server setup for persistent background operation
+            let nfs = AgentNFS::new(fs);
+            let port = find_available_port(DEFAULT_NFS_PORT)?;
 
-        eprintln!("Starting NFS server on 127.0.0.1:{}", port);
+            let bind_addr = format!("127.0.0.1:{}", port);
+            let listener = crate::nfsserve::tcp::NFSTcpListener::bind(&bind_addr, nfs)
+                .await
+                .context("Failed to bind NFS server")?;
 
-        tokio::spawn(async move {
-            if let Err(e) = listener.handle_forever().await {
-                eprintln!("NFS server error: {}", e);
-            }
-        });
+            eprintln!("Starting NFS server on 127.0.0.1:{}", port);
 
-        tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-        nfs_mount(port, &mountpoint)?;
+            tokio::spawn(async move {
+                if let Err(e) = listener.handle_forever().await {
+                    eprintln!("NFS server error: {}", e);
+                }
+            });
 
-        eprintln!("Mounted at {}", mountpoint.display());
-        eprintln!(
-            "Running in background. Use 'umount {}' to unmount.",
-            mountpoint.display()
-        );
+            tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+            nfs_mount(port, &mountpoint)?;
 
-        // Block forever (server runs in background task)
-        std::future::pending::<()>().await;
+            eprintln!("Mounted at {}", mountpoint.display());
+            eprintln!(
+                "Running in background. Use 'umount {}' to unmount.",
+                mountpoint.display()
+            );
+
+            // Block forever (server runs in background task)
+            std::future::pending::<()>().await;
+        }
     }
 
     Ok(())
 }
 
 /// Find an available TCP port starting from the given port.
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 fn find_available_port(start_port: u32) -> Result<u32> {
     for port in start_port..start_port + 100 {
         if std::net::TcpListener::bind(format!("127.0.0.1:{}", port)).is_ok() {
@@ -449,6 +497,12 @@ pub fn list_mounts<W: Write>(out: &mut W) {
 #[cfg(target_os = "macos")]
 pub fn list_mounts<W: std::io::Write>(out: &mut W) {
     let _ = writeln!(out, "Mount listing is only available on Linux.");
+}
+
+/// List all currently mounted agentfs filesystems (Windows stub)
+#[cfg(target_os = "windows")]
+pub fn list_mounts<W: std::io::Write>(out: &mut W) {
+    let _ = writeln!(out, "Mount listing is not available on Windows yet.");
 }
 
 /// Check if a mount point is in use by any process.
@@ -609,6 +663,47 @@ pub fn prune_mounts(force: bool) -> Result<()> {
 #[cfg(target_os = "macos")]
 pub fn prune_mounts(_force: bool) -> Result<()> {
     anyhow::bail!("Mount pruning is only available on Linux")
+}
+
+/// Prune unused agentfs mount points (Windows stub).
+#[cfg(target_os = "windows")]
+pub fn prune_mounts(_force: bool) -> Result<()> {
+    anyhow::bail!("Mount pruning is not available on Windows yet")
+}
+
+#[cfg(all(test, target_os = "windows"))]
+mod tests {
+    use super::*;
+
+    fn windows_mount_args(backend: MountBackend, foreground: bool) -> MountArgs {
+        MountArgs {
+            id_or_path: ":memory:".to_string(),
+            mountpoint: PathBuf::from("Z:"),
+            auto_unmount: false,
+            allow_root: false,
+            allow_other: false,
+            foreground,
+            uid: None,
+            gid: None,
+            backend,
+        }
+    }
+
+    #[test]
+    fn windows_mount_rejects_fuse_before_setup() {
+        let err = mount(windows_mount_args(MountBackend::Fuse, true)).unwrap_err();
+
+        assert!(err
+            .to_string()
+            .contains("FUSE mounting is not supported on Windows"));
+    }
+
+    #[test]
+    fn windows_mount_rejects_background_nfs() {
+        let err = mount(windows_mount_args(MountBackend::Nfs, false)).unwrap_err();
+
+        assert!(err.to_string().contains("foreground mode"));
+    }
 }
 
 /// Print schema version mismatch error and exit.

@@ -11,13 +11,13 @@ pub mod fuse;
 #[cfg(target_os = "linux")]
 pub mod fuser;
 
-#[cfg(unix)]
+#[cfg(any(unix, target_os = "windows"))]
 pub mod nfsserve;
 
-#[cfg(unix)]
+#[cfg(any(unix, target_os = "windows"))]
 pub mod nfs;
 
-#[cfg(unix)]
+#[cfg(any(unix, target_os = "windows"))]
 pub mod mount;
 
 pub fn get_runtime() -> tokio::runtime::Runtime {

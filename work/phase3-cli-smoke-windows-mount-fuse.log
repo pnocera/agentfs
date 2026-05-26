@@ -1,0 +1,5 @@
+   Compiling agentfs v0.6.4 (F:\Tools\agentfs\cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.39s
+     Running `target\x86_64-pc-windows-msvc\debug\agentfs.exe mount :memory: Z: --backend fuse`
+Error: FUSE mounting is not supported on Windows. Use --backend nfs instead.
+error: process didn't exit successfully: `target\x86_64-pc-windows-msvc\debug\agentfs.exe mount :memory: Z: --backend fuse` (exit code: 1)

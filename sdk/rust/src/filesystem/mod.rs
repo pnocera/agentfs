@@ -77,6 +77,39 @@ impl FsError {
 /// Maximum filename length in bytes.
 pub const MAX_NAME_LEN: usize = 255;
 
+/// Open a file for reading.
+///
+/// These constants intentionally use POSIX access-mode values so Unix
+/// implementations can pass them through to libc while other targets can
+/// interpret the SDK-level contract directly.
+pub const OPEN_READONLY: i32 = 0;
+/// Open a file for writing.
+pub const OPEN_WRITEONLY: i32 = 1;
+/// Open a file for reading and writing.
+pub const OPEN_READWRITE: i32 = 2;
+
+/// Extract the major number from an SDK device ID.
+pub fn device_major(dev: u64) -> u32 {
+    (((dev & 0x0000_0000_000f_ff00) >> 8) | ((dev & 0xffff_f000_0000_0000) >> 32)) as u32
+}
+
+/// Extract the minor number from an SDK device ID.
+pub fn device_minor(dev: u64) -> u32 {
+    ((dev & 0x0000_0000_0000_00ff) | ((dev & 0x0000_0fff_fff0_0000) >> 12)) as u32
+}
+
+/// Encode major/minor numbers as a stable SDK device ID.
+///
+/// The encoding matches Linux/GNU `dev_t` packing so Linux HostFS values can be
+/// passed through directly, while other platforms translate at their HostFS
+/// boundaries.
+pub fn make_device(major: u32, minor: u32) -> u64 {
+    (((major as u64) & 0x0000_0fff) << 8)
+        | (((major as u64) & 0xffff_f000) << 32)
+        | ((minor as u64) & 0x0000_00ff)
+        | (((minor as u64) & 0xffff_ff00) << 12)
+}
+
 // File types for mode field
 pub const S_IFMT: u32 = 0o170000; // File type mask
 pub const S_IFREG: u32 = 0o100000; // Regular file
@@ -117,7 +150,9 @@ pub struct Stats {
     pub atime_nsec: u32,
     pub mtime_nsec: u32,
     pub ctime_nsec: u32,
-    pub rdev: u64, // Device ID for special files (char/block devices)
+    /// Device ID for special files (char/block devices), encoded with
+    /// [`make_device`].
+    pub rdev: u64,
 }
 
 /// Filesystem statistics for statfs
@@ -229,9 +264,10 @@ pub trait FileSystem: Send + Sync {
 
     /// Open a file by inode and return a file handle for I/O operations.
     ///
-    /// The `flags` parameter specifies the access mode (e.g., `libc::O_RDONLY`,
-    /// `libc::O_RDWR`). Implementations should use these flags to open the file
-    /// with the appropriate permissions.
+    /// The `flags` parameter specifies the access mode (for example,
+    /// [`OPEN_READONLY`], [`OPEN_READWRITE`], or [`OPEN_WRITEONLY`]).
+    /// Implementations should use these flags to open the file with the
+    /// appropriate permissions.
     async fn open(&self, ino: i64, flags: i32) -> Result<BoxedFile>;
 
     /// Create a directory with the specified ownership.
@@ -317,5 +353,20 @@ pub trait FileSystem: Send + Sync {
     /// cache any resources per inode (like database-backed filesystems).
     async fn forget(&self, _ino: i64, _nlookup: u64) {
         // Default: no-op
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn device_encoding_round_trips_major_minor() {
+        for (major, minor) in [(0, 0), (1, 5), (8, 1), (259, 65_536), (0x12_345, 0x23_456)] {
+            let dev = make_device(major, minor);
+
+            assert_eq!(device_major(dev), major);
+            assert_eq!(device_minor(dev), minor);
+        }
     }
 }

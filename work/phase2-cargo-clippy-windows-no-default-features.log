@@ -1,0 +1,38 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on build directory
+    Checking agentfs v0.6.4 (F:\Tools\agentfs\cli)
+warning: redundant reference in `format!` argument
+   --> src\cmd\init.rs:109:55
+    |
+109 |     let db_path = agentfs_dir().join(format!("{}.db", &id));
+    |                                                       ^^^ help: remove the redundant `&`: `id`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#useless_borrows_in_formatting
+    = note: `#[warn(clippy::useless_borrows_in_formatting)]` on by default
+
+warning: redundant reference in `writeln!` argument
+   --> src\cmd\ps.rs:219:17
+    |
+219 |                 &session.session_id,
+    |                 ^^^^^^^^^^^^^^^^^^^ help: remove the redundant `&`: `session.session_id`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#useless_borrows_in_formatting
+
+warning: this function has too many arguments (9/7)
+  --> src\cmd\run_not_supported.rs:9:1
+   |
+ 9 | / pub async fn run(
+10 | |     _allow: Vec<PathBuf>,
+11 | |     _no_default_allows: bool,
+12 | |     _experimental_sandbox: bool,
+...  |
+18 | |     _args: Vec<String>,
+19 | | ) -> Result<()> {
+   | |_______________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#too_many_arguments
+   = note: `#[warn(clippy::too_many_arguments)]` on by default
+
+warning: `agentfs` (lib) generated 3 warnings (run `cargo clippy --fix --lib -p agentfs -- ` to apply 2 suggestions)
+warning: `agentfs` (lib test) generated 3 warnings (3 duplicates)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 14.92s

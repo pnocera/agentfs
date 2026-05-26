@@ -1,0 +1,22 @@
+Command: cmd /c call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" && set PATH=C:\Program Files\LLVM\bin;%PATH% && cargo check --target x86_64-pc-windows-msvc --no-default-features
+Working directory: F:\Tools\agentfs\cli
+Environment: VS 2022 BuildTools vcvars64 plus C:\Program Files\LLVM\bin for clang-cl.exe
+Started: 
+2026-05-26T09:49:31.4799401+02:00
+
+   Compiling libz-sys v1.1.25
+   Compiling simsimd v6.5.16
+   Compiling libmimalloc-sys v0.1.44
+    Checking mimalloc v0.1.48
+   Compiling libgit2-sys v0.18.3+1.9.2
+   Compiling git2 v0.20.4
+   Compiling built v0.7.7
+   Compiling turso_core v0.4.4
+    Checking turso_sync_engine v0.4.4
+    Checking turso_sdk_kit v0.4.4
+    Checking turso_sync_sdk_kit v0.4.4
+    Checking turso v0.4.4
+    Checking agentfs-sdk v0.6.4 (F:\Tools\agentfs\sdk\rust)
+    Checking agentfs v0.6.4 (F:\Tools\agentfs\cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 46.11s
+ExitCode: 0

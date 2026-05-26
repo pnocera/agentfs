@@ -1,0 +1,99 @@
+   Compiling agentfs v0.6.4 (/mnt/f/Tools/agentfs/cli)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.38s
+     Running unittests src/lib.rs (/tmp/agentfs-phase1-cli-linux-target/x86_64-unknown-linux-gnu/debug/deps/agentfs-f066a3e6c7fb114a)
+
+running 78 tests
+test cmd::fs::tests::ls_empty ... ok
+test cmd::fs::tests::cat_file_found ... ok
+test cmd::migrate::tests::test_detect_schema_version_v0_0 ... ok
+test cmd::fs::tests::cat_file_not_found ... ok
+test cmd::migrate::tests::test_detect_schema_version_v0_2 ... ok
+test cmd::migrate::tests::test_detect_schema_version_v0_4 ... ok
+test cmd::fs::tests::encrypted_write_and_cat ... ok
+test cmd::fs::tests::encrypted_ls ... ok
+test cmd::migrate::tests::test_migrate_v0_2_to_v0_4 ... ok
+test cmd::fs::tests::ls_dirs ... ok
+test cmd::migrate::tests::test_migrate_v0_0_to_v0_4 ... ok
+test cmd::fs::tests::encrypted_write_filesystem ... ok
+test cmd::migrate::tests::test_migrations_are_idempotent ... ok
+test cmd::timeline::tests::test_timeline_empty ... ok
+test fuser::ll::argument::tests::all_data ... ok
+test fuser::ll::argument::tests::generic_argument ... ok
+test fuser::ll::argument::tests::mixed_arguments ... ok
+test fuser::ll::argument::tests::out_of_data ... ok
+test fuser::ll::argument::tests::string_argument ... ok
+test fuser::ll::notify::test::delete ... ok
+test fuser::ll::notify::test::inval_entry ... ok
+test fuser::ll::notify::test::inval_inode ... ok
+test fuser::ll::notify::test::poll ... ok
+test fuser::ll::notify::test::store ... ok
+test fuser::ll::reply::test::reply_attr ... ok
+test fuser::ll::reply::test::reply_bmap ... ok
+test fuser::ll::reply::test::reply_create ... ok
+test fuser::ll::reply::test::reply_data ... ok
+test fuser::ll::reply::test::reply_directory ... ok
+test fuser::ll::reply::test::reply_empty ... ok
+test fuser::ll::reply::test::reply_entry ... ok
+test fuser::ll::reply::test::reply_error ... ok
+test fuser::ll::reply::test::reply_lock ... ok
+test fuser::ll::reply::test::reply_open ... ok
+test fuser::ll::reply::test::reply_statfs ... ok
+test fuser::ll::reply::test::reply_write ... ok
+test fuser::ll::reply::test::reply_xattr_data ... ok
+test fuser::ll::reply::test::reply_xattr_size ... ok
+test fuser::ll::request::tests::init ... ok
+test fuser::ll::request::tests::mknod ... ok
+test fuser::ll::request::tests::short_read ... ok
+test fuser::ll::request::tests::short_read_header ... ok
+test fuser::mnt::mount_options::test::option_checking ... ok
+test fuser::mnt::mount_options::test::option_round_trip ... ok
+test fuser::mnt::mount_options::test::test_parse_options ... ok
+test fuser::reply::test::async_reply ... ok
+test fuser::reply::test::reply_attr ... ok
+test fuser::reply::test::reply_bmap ... ok
+test fuser::reply::test::reply_create ... ok
+test fuser::reply::test::reply_data ... ok
+test fuser::reply::test::reply_directory ... ok
+test fuser::reply::test::reply_empty ... ok
+test fuser::reply::test::reply_entry ... ok
+test fuser::reply::test::reply_error ... ok
+test fuser::reply::test::reply_lock ... ok
+test fuser::reply::test::reply_open ... ok
+test fuser::reply::test::reply_raw ... ok
+test fuser::reply::test::reply_statfs ... ok
+test fuser::reply::test::reply_write ... ok
+test fuser::reply::test::reply_xattr_data ... ok
+test fuser::reply::test::reply_xattr_size ... ok
+test fuser::reply::test::serialize_empty ... ok
+test fuser::reply::test::serialize_slice ... ok
+test fuser::reply::test::serialize_struct ... ok
+test nfs::tests::device_encoding_round_trips_major_minor ... ok
+test nfsserve::permissions::tests::test_access_computation ... ok
+test nfsserve::permissions::tests::test_auxiliary_group ... ok
+test nfsserve::permissions::tests::test_group_permissions ... ok
+test nfsserve::permissions::tests::test_other_permissions ... ok
+test nfsserve::permissions::tests::test_owner_permissions ... ok
+test nfsserve::permissions::tests::test_root_always_allowed ... ok
+test cmd::fs::tests::ls_files_only ... ok
+test cmd::timeline::tests::test_timeline_table_format ... ok
+test cmd::timeline::tests::test_timeline_limit ... ok
+test cmd::timeline::tests::test_timeline_truncate_long_names ... ok
+test cmd::timeline::tests::test_timeline_filter_by_name ... ok
+test cmd::timeline::tests::test_timeline_filter_by_status ... ok
+test cmd::fs::tests::cat_big_file_found ... ok
+
+test result: ok. 78 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.95s
+
+     Running unittests src/main.rs (/tmp/agentfs-phase1-cli-linux-target/x86_64-unknown-linux-gnu/debug/deps/agentfs-bbda4780a5c2a3ad)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests agentfs
+
+running 1 test
+test src/mount/mod.rs - mount (line 8) ... ignored
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

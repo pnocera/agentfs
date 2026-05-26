@@ -20,8 +20,10 @@ mod nfs;
 
 use anyhow::Result;
 use std::path::{Path, PathBuf};
+#[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
 use std::sync::Arc;
 use std::time::Duration;
+#[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
 use tokio::sync::Mutex;
 use tokio_util::sync::CancellationToken;
 
@@ -114,7 +116,10 @@ impl MountHandle {
 impl Drop for MountHandle {
     fn drop(&mut self) {
         // Move away from mountpoint before unmounting to avoid EBUSY
+        #[cfg(not(target_os = "windows"))]
         let _ = std::env::set_current_dir("/");
+        #[cfg(target_os = "windows")]
+        let _ = std::env::set_current_dir(std::env::temp_dir());
 
         match &self.inner {
             #[cfg(target_os = "linux")]
@@ -127,7 +132,10 @@ impl Drop for MountHandle {
                     );
                 }
             }
-            MountHandleInner::Nfs { shutdown, .. } => {
+            MountHandleInner::Nfs {
+                shutdown,
+                _server_handle,
+            } => {
                 // Signal the NFS server to shut down
                 shutdown.cancel();
 
@@ -139,6 +147,8 @@ impl Drop for MountHandle {
                         e
                     );
                 }
+
+                _server_handle.abort();
             }
         }
     }
@@ -190,6 +200,20 @@ pub async fn mount_fs(
     }
 }
 
+/// Mount a filesystem with the given options (Windows version).
+#[cfg(target_os = "windows")]
+pub async fn mount_fs(
+    fs: Arc<Mutex<dyn agentfs_sdk::FileSystem + Send>>,
+    opts: MountOpts,
+) -> Result<MountHandle> {
+    match opts.backend {
+        MountBackend::Fuse => {
+            anyhow::bail!("FUSE mounting is not supported on Windows. Use --backend nfs instead.");
+        }
+        MountBackend::Nfs => nfs::mount_nfs(fs, opts).await,
+    }
+}
+
 /// Wait for a path to become a mountpoint.
 pub fn wait_for_mount(path: &Path, timeout: Duration) -> bool {
     let start = std::time::Instant::now();
@@ -232,5 +256,26 @@ pub fn is_mountpoint(path: &Path) -> bool {
     {
         let _ = path;
         false
+    }
+}
+
+#[cfg(all(test, target_os = "windows"))]
+mod tests {
+    use super::*;
+    use agentfs_sdk::{AgentFS, AgentFSOptions};
+
+    #[tokio::test]
+    async fn windows_mount_fs_rejects_fuse_backend() {
+        let agentfs = AgentFS::open(AgentFSOptions::ephemeral()).await.unwrap();
+        let fs: Arc<Mutex<dyn agentfs_sdk::FileSystem + Send>> = Arc::new(Mutex::new(agentfs.fs));
+        let opts = MountOpts::new(PathBuf::from("Z:"), MountBackend::Fuse);
+
+        let Err(err) = mount_fs(fs, opts).await else {
+            panic!("Windows FUSE mount unexpectedly succeeded");
+        };
+
+        assert!(err
+            .to_string()
+            .contains("FUSE mounting is not supported on Windows"));
     }
 }
