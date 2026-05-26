@@ -1,0 +1,28 @@
+    Checking serde_core v1.0.228
+    Checking tracing v0.1.44
+    Checking strum v0.26.3
+    Checking aegis v0.9.8
+    Checking turso_parser v0.4.4
+    Checking openssl v0.10.76
+    Checking libmimalloc-sys v0.1.44
+    Checking tracing-subscriber v0.3.23
+    Checking hyper-util v0.1.20
+    Checking clap v4.6.0
+    Checking mimalloc v0.1.48
+    Checking clap_complete v4.5.61
+    Checking tracing-appender v0.2.4
+    Checking serde v1.0.228
+    Checking serde_json v1.0.149
+    Checking chrono v0.4.44
+    Checking native-tls v0.2.18
+    Checking tokio-native-tls v0.3.1
+    Checking hyper-tls v0.6.0
+    Checking turso_ext v0.4.4
+    Checking turso_core v0.4.4
+    Checking turso_sdk_kit v0.4.4
+    Checking turso_sync_engine v0.4.4
+    Checking turso_sync_sdk_kit v0.4.4
+    Checking turso v0.4.4
+    Checking agentfs-sdk v0.6.4 (/mnt/f/Tools/agentfs/sdk/rust)
+    Checking agentfs v0.6.4 (/mnt/f/Tools/agentfs/cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 34.52s

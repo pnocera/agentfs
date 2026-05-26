@@ -283,7 +283,7 @@ pub enum Command {
     },
     /// Start an NFS server to export an AgentFS filesystem over the network
     /// (deprecated: use `agentfs serve nfs` instead)
-    #[cfg(unix)]
+    #[cfg(any(unix, target_os = "windows"))]
     Nfs {
         /// Agent ID or database path
         #[arg(value_name = "ID_OR_PATH", add = ArgValueCompleter::new(id_or_path_completer))]
@@ -374,7 +374,7 @@ pub enum SyncCommand {
 #[derive(Subcommand, Debug)]
 pub enum ServeCommand {
     /// Start an NFS server to export an AgentFS filesystem over the network
-    #[cfg(unix)]
+    #[cfg(any(unix, target_os = "windows"))]
     Nfs {
         /// Agent ID or database path
         #[arg(value_name = "ID_OR_PATH", add = ArgValueCompleter::new(id_or_path_completer))]

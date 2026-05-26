@@ -63,6 +63,9 @@ pub async fn handle_nfs_command(id_or_path: String, bind: String, port: u32) -> 
     eprintln!("  Export: /");
     eprintln!();
     eprintln!("Mount from client:");
+    #[cfg(target_os = "windows")]
+    print_windows_client_examples(&bind, port);
+    #[cfg(not(target_os = "windows"))]
     eprintln!(
         "  mount -t nfs -o vers=3,tcp,port={},mountport={},nolock {}:/ /mnt",
         port, port, bind
@@ -97,8 +100,8 @@ pub async fn handle_nfs_command(id_or_path: String, bind: String, port: u32) -> 
 fn resolve_db_path(id_or_path: &str) -> Result<PathBuf> {
     let path = PathBuf::from(id_or_path);
 
-    // If it looks like a path (contains / or ends with .db), use it directly
-    if id_or_path.contains('/') || id_or_path.ends_with(".db") {
+    // If it looks like a path (contains separators or ends with .db), use it directly
+    if id_or_path.contains('/') || id_or_path.contains('\\') || id_or_path.ends_with(".db") {
         return Ok(path);
     }
 
@@ -111,5 +114,84 @@ fn resolve_db_path(id_or_path: &str) -> Result<PathBuf> {
     } else {
         // If it doesn't exist, still return the path - AgentFS will create it
         Ok(db_path)
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn print_windows_client_examples(bind: &str, port: u32) {
+    let host = windows_example_host(bind);
+
+    eprintln!("  Windows Client for NFS:");
+    for source in windows_nfs_sources(&host, port) {
+        eprintln!(
+            "    %SystemRoot%\\System32\\mount.exe -o anon,nolock,casesensitive=yes,mtype=soft {} Z:",
+            source
+        );
+    }
+    eprintln!();
+    eprintln!("  Unix client:");
+    eprintln!(
+        "    mount -t nfs -o vers=3,tcp,port={},mountport={},nolock {}:/ /mnt",
+        port, port, host
+    );
+    eprintln!();
+    eprintln!(
+        "  If Windows returns Network Error 53, verify the Client for NFS can mount localhost exports on this machine."
+    );
+}
+
+#[cfg(target_os = "windows")]
+fn windows_example_host(bind: &str) -> String {
+    match bind {
+        "0.0.0.0" | "::" | "[::]" => "127.0.0.1".to_string(),
+        other => other.to_string(),
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn windows_nfs_sources(host: &str, port: u32) -> Vec<String> {
+    let mut sources = Vec::new();
+    if port == 2049 {
+        sources.push(format!(r"\\{}\!", host));
+    }
+    sources.extend([
+        format!(r"\\{}@{}\!", host, port),
+        format!(r"\\{}:{}\!", host, port),
+    ]);
+    sources
+}
+
+#[cfg(all(test, target_os = "windows"))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn windows_example_host_uses_localhost_for_wildcard_binds() {
+        assert_eq!(windows_example_host("0.0.0.0"), "127.0.0.1");
+        assert_eq!(windows_example_host("::"), "127.0.0.1");
+        assert_eq!(windows_example_host("192.0.2.10"), "192.0.2.10");
+    }
+
+    #[test]
+    fn windows_sources_include_no_port_form_for_default_port() {
+        assert_eq!(
+            windows_nfs_sources("127.0.0.1", 2049),
+            vec![
+                r"\\127.0.0.1\!".to_string(),
+                r"\\127.0.0.1@2049\!".to_string(),
+                r"\\127.0.0.1:2049\!".to_string(),
+            ]
+        );
+    }
+
+    #[test]
+    fn windows_sources_only_include_explicit_port_forms_for_high_port() {
+        assert_eq!(
+            windows_nfs_sources("127.0.0.1", 11111),
+            vec![
+                r"\\127.0.0.1@11111\!".to_string(),
+                r"\\127.0.0.1:11111\!".to_string(),
+            ]
+        );
     }
 }

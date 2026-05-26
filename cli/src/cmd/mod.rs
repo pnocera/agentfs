@@ -15,8 +15,8 @@ pub mod mount;
 
 mod run;
 
-// Standalone NFS server command (Unix only)
-#[cfg(unix)]
+// Standalone NFS server command.
+#[cfg(any(unix, target_os = "windows"))]
 pub mod nfs;
 
 // Exec command (Unix only)

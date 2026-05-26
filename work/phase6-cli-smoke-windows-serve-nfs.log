@@ -1,0 +1,26 @@
+Command: F:\Tools\agentfs\cli\target\x86_64-pc-windows-msvc\debug\agentfs.exe serve nfs F:\Tools\agentfs\work\phase6-serve-smoke.db --bind 127.0.0.1 --port 55559
+Startup result: ready=True state_before_stop=running
+
+stderr:
+Mode: direct AgentFS
+
+AgentFS NFS Server
+  Database: F:\Tools\agentfs\work\phase6-serve-smoke.db
+  Listening: 127.0.0.1:55559
+  Export: /
+
+Mount from client:
+  Windows Client for NFS:
+    %SystemRoot%\System32\mount.exe -o anon,nolock,casesensitive=yes,mtype=soft \\127.0.0.1@55559\! Z:
+    %SystemRoot%\System32\mount.exe -o anon,nolock,casesensitive=yes,mtype=soft \\127.0.0.1:55559\! Z:
+
+  Unix client:
+    mount -t nfs -o vers=3,tcp,port=55559,mountport=55559,nolock 127.0.0.1:/ /mnt
+
+  If Windows returns Network Error 53, verify the Client for NFS can mount localhost exports on this machine.
+
+Press Ctrl+C to stop.
+
+
+
+stdout:

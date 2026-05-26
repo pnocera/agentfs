@@ -259,7 +259,7 @@ fn main() {
             }
         }
         Command::Completions { command } => handle_completions(command),
-        #[cfg(unix)]
+        #[cfg(any(unix, target_os = "windows"))]
         Command::Nfs {
             id_or_path,
             bind,
@@ -285,7 +285,7 @@ fn main() {
             }
         }
         Command::Serve { command } => match command {
-            #[cfg(unix)]
+            #[cfg(any(unix, target_os = "windows"))]
             ServeCommand::Nfs {
                 id_or_path,
                 bind,

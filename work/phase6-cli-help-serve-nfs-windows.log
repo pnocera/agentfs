@@ -1,0 +1,38 @@
+agentfs serve --help
+Serve an AgentFS filesystem via different protocols
+
+Usage: agentfs.exe serve <COMMAND>
+
+Commands:
+  nfs   Start an NFS server to export an AgentFS filesystem over the network
+  mcp   Start an MCP server exposing filesystem and KV-store tools
+  help  Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help  Print help
+
+agentfs serve nfs --help
+Start an NFS server to export an AgentFS filesystem over the network
+
+Usage: agentfs.exe serve nfs [OPTIONS] <ID_OR_PATH>
+
+Arguments:
+  <ID_OR_PATH>  Agent ID or database path
+
+Options:
+      --bind <BIND>  IP address to bind to [default: 127.0.0.1]
+      --port <PORT>  Port to listen on [default: 11111]
+  -h, --help         Print help
+
+agentfs nfs --help
+Start an NFS server to export an AgentFS filesystem over the network (deprecated: use `agentfs serve nfs` instead)
+
+Usage: agentfs.exe nfs [OPTIONS] <ID_OR_PATH>
+
+Arguments:
+  <ID_OR_PATH>  Agent ID or database path
+
+Options:
+      --bind <BIND>  IP address to bind to [default: 127.0.0.1]
+      --port <PORT>  Port to listen on [default: 11111]
+  -h, --help         Print help
