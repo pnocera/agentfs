@@ -4,7 +4,8 @@
 __MACOSX/
 .AppleDouble
 .LSOverride
-Icon[]
+Icon[
+]
 
 # Thumbnails
 ._*
@@ -28,3 +29,5 @@ Temporary Items
 .agentfs
 .codex/
 work/**/*.git-context.md
+
+dist
