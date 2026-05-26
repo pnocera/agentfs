@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a title="Build Status" target="_blank" href="https://github.com/tursodatabase/agentfs/actions/workflows/rust.yml"><img src="https://img.shields.io/github/actions/workflow/status/tursodatabase/agentfs/rust.yml?style=flat-square"></a>
+  <a title="Windows Build Status" target="_blank" href="https://github.com/tursodatabase/agentfs/actions/workflows/windows-rust.yml"><img src="https://img.shields.io/github/actions/workflow/status/tursodatabase/agentfs/windows-rust.yml?style=flat-square"></a>
   <a title="Rust" target="_blank" href="https://crates.io/crates/agentfs-sdk"><img alt="Crate" src="https://img.shields.io/crates/v/agentfs-sdk"></a>
   <a title="JavaScript" target="_blank" href="https://www.npmjs.com/package/agentfs-sdk"><img alt="NPM" src="https://img.shields.io/npm/v/agentfs-sdk"></a>
   <a title="Python" target="_blank" href="https://pypi.org/project/agentfs-sdk/"><img alt="PyPI" src="https://img.shields.io/pypi/v/agentfs-sdk"></a>
@@ -29,7 +29,7 @@ The AgentFS repository consists of the following:
 
 * **SDK** - [TypeScript](sdk/typescript), [Python](sdk/python), and [Rust](sdk/rust) libraries for programmatic filesystem access.
 * **[CLI](MANUAL.md)** - Command-line interface for managing agent filesystems:
-  - Mount AgentFS on host filesystem with FUSE on Linux and NFS on macOS.
+  - Mount AgentFS on the host filesystem with FUSE on Linux and NFS on macOS and Windows.
   - Access AgentFS files with a command line tool.
 * **[AgentFS Specification](SPEC.md)** - SQLite-based agent filesystem specification.
 
@@ -90,7 +90,7 @@ ID   TOOL                 STATUS       DURATION STARTED
 1    web_search           success        1200ms 2024-01-05 09:43:45
 ```
 
-You can mount an agent filesystem using FUSE (Linux) or NFS (macOS):
+You can mount an agent filesystem using FUSE on Linux or NFS on macOS and Windows:
 
 ```bash
 $ agentfs mount my-agent ./mnt
@@ -99,7 +99,19 @@ $ cat ./mnt/hello.txt
 hello
 ```
 
-You can also run a program in an experimental sandbox with the agent filesystem mounted at `/agent`:
+On Windows, enable the optional Windows Client for NFS feature first and mount to an unassigned drive letter:
+
+```powershell
+# Terminal 1: keep this process running while the drive is mounted.
+agentfs mount my-agent Z: --backend nfs -f
+```
+
+```powershell
+# Terminal 2
+Get-Content Z:\hello.txt
+```
+
+You can also run a program with a copy-on-write AgentFS view of the current working directory:
 
 ```bash
 $ agentfs run /bin/bash
@@ -110,6 +122,8 @@ $ cat /agent/hello.txt
 hello from agent
 $ exit
 ```
+
+Linux and macOS use OS sandboxing for `agentfs run`. Windows v1 is overlay-only copy-on-write execution and is not a security sandbox.
 
 Read the **[User Manual](MANUAL.md)** for complete documentation.
 

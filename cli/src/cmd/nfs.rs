@@ -100,7 +100,8 @@ pub async fn handle_nfs_command(id_or_path: String, bind: String, port: u32) -> 
 fn resolve_db_path(id_or_path: &str) -> Result<PathBuf> {
     let path = PathBuf::from(id_or_path);
 
-    // If it looks like a path (contains separators or ends with .db), use it directly
+    // Agent IDs cannot contain dots today, so a .db suffix is safe to treat as a path.
+    // Separators cover explicit Unix and Windows database paths.
     if id_or_path.contains('/') || id_or_path.contains('\\') || id_or_path.ends_with(".db") {
         return Ok(path);
     }
@@ -109,23 +110,28 @@ fn resolve_db_path(id_or_path: &str) -> Result<PathBuf> {
     let agentfs_dir = agentfs_dir();
     let db_path = agentfs_dir.join(format!("{}.db", id_or_path));
 
-    if db_path.exists() {
-        Ok(db_path)
-    } else {
-        // If it doesn't exist, still return the path - AgentFS will create it
-        Ok(db_path)
-    }
+    // If it doesn't exist, still return the path - AgentFS will create it.
+    Ok(db_path)
 }
 
 #[cfg(target_os = "windows")]
 fn print_windows_client_examples(bind: &str, port: u32) {
     let host = windows_example_host(bind);
+    let options = "anon,nolock,casesensitive=yes,mtype=soft,timeout=8,retry=1";
 
-    eprintln!("  Windows Client for NFS:");
+    eprintln!("  Windows Client for NFS (cmd.exe):");
     for source in windows_nfs_sources(&host, port) {
         eprintln!(
-            "    %SystemRoot%\\System32\\mount.exe -o anon,nolock,casesensitive=yes,mtype=soft {} Z:",
-            source
+            "    %SystemRoot%\\System32\\mount.exe -o {} {} Z:",
+            options, source
+        );
+    }
+    eprintln!();
+    eprintln!("  Windows Client for NFS (PowerShell):");
+    for source in windows_nfs_sources(&host, port) {
+        eprintln!(
+            "    & $env:SystemRoot\\System32\\mount.exe -o {} {} Z:",
+            options, source
         );
     }
     eprintln!();

@@ -1,0 +1,5 @@
+cargo fmt --manifest-path cli\Cargo.toml -- --check
+cli_exit=0
+
+cargo fmt --manifest-path sdk\rust\Cargo.toml -- --check
+sdk_exit=0

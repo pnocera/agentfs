@@ -10,6 +10,29 @@ For guides, tutorials, and SDK documentation, see [docs.turso.tech/agentfs](http
 curl -fsSL https://github.com/tursodatabase/agentfs/releases/latest/download/agentfs-installer.sh | sh
 ```
 
+## Windows Requirements
+
+Windows support uses the built-in Windows Client for NFS. Enable these optional
+features from an elevated PowerShell session before using `agentfs mount`,
+`agentfs run`, or `agentfs serve nfs` with the Windows NFS client:
+
+```powershell
+Enable-WindowsOptionalFeature -Online -FeatureName ServicesForNFS-ClientOnly -All
+Enable-WindowsOptionalFeature -Online -FeatureName ClientForNFS-Infrastructure -All
+```
+
+The optional feature is available only on Windows editions that include Client
+for NFS. Windows Home may not provide it. AgentFS expects
+`%SystemRoot%\System32\mount.exe`, `%SystemRoot%\System32\umount.exe`, and the
+`NfsClnt` service to be present.
+
+Windows mounts use unassigned drive letters such as `Z:` or `Z:\`, not existing
+directories. The Windows v1 port uses NFS; FUSE and WinFsp-native mounts are
+deferred.
+
+`agentfs run` on Windows provides copy-on-write overlay execution only. It sets
+`AGENTFS_SANDBOX=windows-overlay-only` and is not a security sandbox.
+
 ## Commands
 
 ### agentfs init
@@ -51,6 +74,9 @@ agentfs init my-agent -c "touch hello.txt && ls -la"
 # With overlay filesystem
 agentfs init my-overlay --base /path/to/project -c "make build"
 ```
+
+On Windows, `agentfs init -c` is not supported in v1. Use `agentfs init` and
+then `agentfs mount` or `agentfs run`.
 
 ### agentfs exec
 
@@ -106,7 +132,9 @@ agentfs run [OPTIONS] <COMMAND> [ARGS]...
 
 **Platform behavior:**
 
-Linux uses FUSE + overlay filesystem with user namespaces. macOS uses NFS + overlay filesystem with Apple's Sandbox.
+Linux uses FUSE + overlay filesystem with user namespaces. macOS uses NFS +
+overlay filesystem with Apple's Sandbox. Windows uses NFS + overlay filesystem
+on an unassigned drive letter and does not provide OS sandbox isolation in v1.
 
 Default allowed directories (macOS): `~/.claude`, `~/.codex`, `~/.config`, `~/.cache`, `~/.local`, `~/.npm`, `/tmp`
 
@@ -130,6 +158,26 @@ Without arguments, lists all mounted agentfs filesystems.
 **Unmounting:**
 - Linux: `fusermount -u <MOUNT_POINT>`
 - macOS: `umount <MOUNT_POINT>`
+- Windows: `%SystemRoot%\System32\umount.exe Z:`
+
+**Windows example:**
+
+```powershell
+agentfs init win-direct
+agentfs fs win-direct write /hello.txt hello
+
+# Terminal 1: keep this process running while the drive is mounted.
+agentfs mount win-direct Z: --backend nfs -f
+```
+
+```powershell
+# Terminal 2
+Get-Content Z:\hello.txt
+```
+
+Windows mount points must be unassigned drive letters. `--backend fuse` is not
+supported on Windows; use `--backend nfs`. The foreground mount process must
+remain running for the drive to stay mounted.
 
 ### agentfs serve mcp
 
@@ -164,6 +212,26 @@ agentfs serve nfs <ID_OR_PATH> [OPTIONS]
 ```bash
 mount -t nfs -o vers=3,tcp,port=11111,mountport=11111,nolock <HOST>:/ <MOUNT_POINT>
 ```
+
+On Windows clients, use the built-in Client for NFS:
+
+```cmd
+%SystemRoot%\System32\mount.exe -o anon,nolock,casesensitive=yes,mtype=soft,timeout=8,retry=1 \\127.0.0.1@11111\! Z:
+```
+
+```powershell
+& $env:SystemRoot\System32\mount.exe -o anon,nolock,casesensitive=yes,mtype=soft,timeout=8,retry=1 \\127.0.0.1@11111\! Z:
+```
+
+For non-default NFS ports, AgentFS probes both `\\127.0.0.1@PORT\!` and
+`\\127.0.0.1:PORT\!` when it mounts internally. If the Windows client returns
+`Network Error 53`, verify that the Client for NFS optional feature can mount
+localhost exports on that machine.
+
+`agentfs mount` starts its internal Windows NFS server at port 2049 when that
+port is available, because the built-in Windows client handles the default NFS
+port more reliably than high localhost ports. The `11111` examples above apply
+to `agentfs serve nfs --port 11111` and other explicitly chosen ports.
 
 ### agentfs sync
 
@@ -313,7 +381,7 @@ Supported shells: `bash`, `zsh`, `fish`, `powershell`
 | Variable | Description |
 |----------|-------------|
 | `AGENTFS` | Set to `1` inside AgentFS sandbox |
-| `AGENTFS_SANDBOX` | Sandbox type: `macos-sandbox` or `linux-namespace` |
+| `AGENTFS_SANDBOX` | Sandbox type: `macos-sandbox`, `linux-namespace`, or `windows-overlay-only` |
 | `AGENTFS_SESSION` | Current session ID |
 
 ## Local Encryption
