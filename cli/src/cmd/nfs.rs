@@ -157,7 +157,7 @@ fn windows_example_host(bind: &str) -> String {
 #[cfg(target_os = "windows")]
 fn windows_nfs_sources(host: &str, port: u32) -> Vec<String> {
     let mut sources = Vec::new();
-    if port == 2049 {
+    if port == 111 || port == 2049 {
         sources.push(format!(r"\\{}\!", host));
     }
     sources.extend([
@@ -179,7 +179,19 @@ mod tests {
     }
 
     #[test]
-    fn windows_sources_include_no_port_form_for_default_port() {
+    fn windows_sources_include_no_port_form_for_portmapper_port() {
+        assert_eq!(
+            windows_nfs_sources("127.0.0.1", 111),
+            vec![
+                r"\\127.0.0.1\!".to_string(),
+                r"\\127.0.0.1@111\!".to_string(),
+                r"\\127.0.0.1:111\!".to_string(),
+            ]
+        );
+    }
+
+    #[test]
+    fn windows_sources_include_no_port_form_for_default_nfs_port() {
         assert_eq!(
             windows_nfs_sources("127.0.0.1", 2049),
             vec![

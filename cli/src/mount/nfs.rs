@@ -16,10 +16,13 @@ use super::{MountBackend, MountHandle, MountHandleInner, MountOpts};
 /// Default NFS port to try (use a high port to avoid needing root).
 #[cfg(not(target_os = "windows"))]
 const DEFAULT_NFS_PORT: u32 = 11111;
-/// Default Windows Client for NFS port. Windows can bind this as a normal user,
-/// and the built-in client does not expose a reliable high-port mount syntax.
+/// Default Windows Client for NFS port.
+///
+/// The built-in Windows client discovers MOUNT/NFS through the standard
+/// portmapper port. Our NFS listener handles portmap, mount, and NFS RPC on the
+/// same TCP port, so Windows needs that listener on 111 for drive mounts.
 #[cfg(target_os = "windows")]
-const DEFAULT_NFS_PORT: u32 = 2049;
+const DEFAULT_NFS_PORT: u32 = 111;
 
 #[cfg(target_os = "windows")]
 struct WindowsNfsClient {
@@ -128,6 +131,9 @@ pub(super) async fn mount_nfs(
 
     let nfs = AgentNFS::new(fs);
 
+    #[cfg(target_os = "windows")]
+    let port = find_required_windows_port(DEFAULT_NFS_PORT)?;
+    #[cfg(not(target_os = "windows"))]
     let port = find_available_port(DEFAULT_NFS_PORT)?;
 
     let bind_addr = format!("127.0.0.1:{}", port);
@@ -165,6 +171,7 @@ pub(super) async fn mount_nfs(
 }
 
 /// Find an available TCP port starting from the given port.
+#[cfg(not(target_os = "windows"))]
 fn find_available_port(start_port: u32) -> Result<u32> {
     for port in start_port..start_port + 100 {
         if std::net::TcpListener::bind(format!("127.0.0.1:{}", port)).is_ok() {
@@ -175,6 +182,18 @@ fn find_available_port(start_port: u32) -> Result<u32> {
         "Could not find an available port in range {}-{}",
         start_port,
         start_port + 100
+    );
+}
+
+#[cfg(target_os = "windows")]
+fn find_required_windows_port(port: u32) -> Result<u32> {
+    if std::net::TcpListener::bind(format!("127.0.0.1:{}", port)).is_ok() {
+        return Ok(port);
+    }
+
+    anyhow::bail!(
+        "Windows AgentFS NFS mounts require localhost TCP port {} for the built-in Client for NFS portmapper lookup. Free that port, disable the conflicting NFS server/portmapper service, or use `agentfs serve nfs --port <PORT>` for server-only access.",
+        port
     );
 }
 
@@ -330,7 +349,7 @@ fn parse_windows_drive_mountpoint(mountpoint: &Path) -> Result<String> {
 #[cfg(target_os = "windows")]
 fn windows_nfs_sources(port: u32) -> Vec<String> {
     let mut sources = Vec::new();
-    if port == 2049 {
+    if port == 111 || port == 2049 {
         sources.push(r"\\127.0.0.1\!".to_string());
     }
     sources.extend([
@@ -419,7 +438,19 @@ mod tests {
     }
 
     #[test]
-    fn default_windows_nfs_port_tries_no_port_source_first() {
+    fn windows_portmapper_port_tries_no_port_source_first() {
+        assert_eq!(
+            windows_nfs_sources(111),
+            vec![
+                r"\\127.0.0.1\!".to_string(),
+                r"\\127.0.0.1@111\!".to_string(),
+                r"\\127.0.0.1:111\!".to_string()
+            ]
+        );
+    }
+
+    #[test]
+    fn default_nfs_port_tries_no_port_source_first() {
         assert_eq!(
             windows_nfs_sources(2049),
             vec![

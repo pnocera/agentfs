@@ -1,0 +1,32 @@
+exe=F:\Tools\agentfs\cli\target\x86_64-pc-windows-msvc\debug\agentfs.exe
+id=port111_fix_direct
+drive=Z:
+Created agent filesystem: .agentfs\port111_fix_direct.db
+Agent ID: port111_fix_direct
+init_exit=0
+fs_write_exit=0
+mount_started_state=running
+mounted=True
+read_text=hello
+created_text_on_drive=created
+
+
+Disconnecting 		Z:	\\127.0.0.1\!
+The command completed successfully.
+umount_exit=0
+
+fs cat /created.txt after unmount:
+created
+fs_cat_created_exit=0
+
+stderr:
+Mounted at Z:
+Press Ctrl+C to unmount and exit.
+
+
+stdout:
+[2m2026-05-26T11:39:34.326185Z[0m [33m WARN[0m [2magentfs::nfsserve::rpcwire[0m[2m:[0m Unknown RPC Program number 100021 != 100003
+[2m2026-05-26T11:39:34.681804Z[0m [33m WARN[0m [2magentfs::nfsserve::nfs_handlers[0m[2m:[0m Invalid NFS Version number 2 != 3
+[2m2026-05-26T11:39:34.687372Z[0m [33m WARN[0m [2magentfs::nfsserve::nfs_handlers[0m[2m:[0m Invalid NFS Version number 2 != 3
+[2m2026-05-26T11:39:34.715301Z[0m [33m WARN[0m [2magentfs::nfsserve::nfs_handlers[0m[2m:[0m Unimplemented message NFSPROC3_COMMIT
+

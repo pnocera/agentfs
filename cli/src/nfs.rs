@@ -80,9 +80,13 @@ impl AgentNFS {
             specdata2: device_minor(stats.rdev),
         };
 
+        let mode = stats.mode & 0o7777;
+        #[cfg(target_os = "windows")]
+        let mode = windows_client_mode(stats, mode);
+
         fattr3 {
             ftype,
-            mode: stats.mode & 0o7777,
+            mode,
             nlink: stats.nlink,
             uid: stats.uid,
             gid: stats.gid,
@@ -563,6 +567,16 @@ impl NFSFileSystem for AgentNFS {
     }
 }
 
+#[cfg(target_os = "windows")]
+fn windows_client_mode(stats: &Stats, mode: u32) -> u32 {
+    // Windows Client for NFS commonly mounts with anonymous UNIX credentials.
+    // AgentFS v1 does not manage POSIX ownership on Windows, so report
+    // permissive access bits to keep the Windows drive writable while leaving
+    // the underlying AgentFS mode unchanged.
+    let access_bits = if stats.is_directory() { 0o777 } else { 0o666 };
+    (mode & !0o777) | access_bits
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -575,5 +589,30 @@ mod tests {
             assert_eq!(device_major(dev), major);
             assert_eq!(device_minor(dev), minor);
         }
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_client_mode_preserves_upper_bits_and_makes_nodes_writable() {
+        let mut stats = Stats {
+            ino: 1,
+            mode: S_IFREG | 0o4000 | 0o400,
+            nlink: 1,
+            uid: 0,
+            gid: 0,
+            size: 0,
+            atime: 0,
+            mtime: 0,
+            ctime: 0,
+            atime_nsec: 0,
+            mtime_nsec: 0,
+            ctime_nsec: 0,
+            rdev: 0,
+        };
+
+        assert_eq!(windows_client_mode(&stats, stats.mode & 0o7777), 0o4666);
+
+        stats.mode = S_IFDIR | 0o1000 | 0o500;
+        assert_eq!(windows_client_mode(&stats, stats.mode & 0o7777), 0o1777);
     }
 }

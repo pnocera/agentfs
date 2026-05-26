@@ -1,0 +1,61 @@
+   Compiling turso_core v0.4.4
+   Compiling turso_sync_engine v0.4.4
+   Compiling turso_sdk_kit v0.4.4
+   Compiling turso_sync_sdk_kit v0.4.4
+   Compiling turso v0.4.4
+   Compiling agentfs-sdk v0.6.4 (F:\Tools\agentfs\sdk\rust)
+   Compiling agentfs v0.6.4 (F:\Tools\agentfs\cli)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 48.64s
+     Running unittests src\lib.rs (target\x86_64-pc-windows-msvc\debug\deps\agentfs-f04dfd6baeafc991.exe)
+
+running 47 tests
+test cmd::fs::tests::cat_file_not_found ... ok
+test cmd::fs::tests::ls_empty ... ok
+test cmd::fs::tests::cat_file_found ... ok
+test cmd::migrate::tests::test_detect_schema_version_v0_0 ... ok
+test cmd::migrate::tests::test_detect_schema_version_v0_2 ... ok
+test cmd::migrate::tests::test_detect_schema_version_v0_4 ... ok
+test cmd::migrate::tests::test_migrate_v0_0_to_v0_4 ... ok
+test cmd::migrate::tests::test_migrate_v0_2_to_v0_4 ... ok
+test cmd::migrate::tests::test_migrations_are_idempotent ... ok
+test cmd::mount::tests::windows_mount_rejects_background_nfs ... ok
+test cmd::mount::tests::windows_mount_rejects_fuse_before_setup ... ok
+test cmd::nfs::tests::windows_example_host_uses_localhost_for_wildcard_binds ... ok
+test cmd::nfs::tests::windows_sources_include_no_port_form_for_default_nfs_port ... ok
+test cmd::nfs::tests::windows_sources_include_no_port_form_for_portmapper_port ... ok
+test cmd::nfs::tests::windows_sources_only_include_explicit_port_forms_for_high_port ... ok
+test cmd::run::sys::tests::chooses_unused_drive_from_high_to_low ... ok
+test cmd::run::sys::tests::leaves_explicit_shell_args_unchanged ... ok
+test cmd::run::sys::tests::prepares_interactive_cmd_prompt ... ok
+test cmd::run::sys::tests::prepares_interactive_powershell_prompt ... ok
+test cmd::run::sys::tests::returns_none_when_no_drive_is_available ... ok
+test cmd::fs::tests::encrypted_write_and_cat ... ok
+test cmd::fs::tests::encrypted_ls ... ok
+test cmd::fs::tests::encrypted_write_filesystem ... ok
+test cmd::timeline::tests::test_timeline_empty ... ok
+test cmd::fs::tests::ls_dirs ... ok
+test mount::nfs::tests::builds_non_default_port_probe_sources ... ok
+test mount::nfs::tests::builds_windows_nfs_client_paths_from_system_root ... ok
+test mount::nfs::tests::default_nfs_port_tries_no_port_source_first ... ok
+test mount::nfs::tests::parses_windows_drive_mountpoints ... ok
+test mount::nfs::tests::rejects_non_drive_mountpoints ... ok
+test mount::nfs::tests::windows_portmapper_port_tries_no_port_source_first ... ok
+test cmd::timeline::tests::test_timeline_filter_by_name ... ok
+test nfs::tests::device_encoding_round_trips_major_minor ... ok
+test nfs::tests::windows_client_mode_preserves_upper_bits_and_makes_nodes_writable ... ok
+test nfsserve::permissions::tests::test_access_computation ... ok
+test nfsserve::permissions::tests::test_auxiliary_group ... ok
+test nfsserve::permissions::tests::test_group_permissions ... ok
+test nfsserve::permissions::tests::test_other_permissions ... ok
+test nfsserve::permissions::tests::test_owner_permissions ... ok
+test nfsserve::permissions::tests::test_root_always_allowed ... ok
+test mount::tests::windows_mount_fs_rejects_fuse_backend ... ok
+test cmd::fs::tests::ls_files_only ... ok
+test cmd::timeline::tests::test_timeline_limit ... ok
+test cmd::timeline::tests::test_timeline_table_format ... ok
+test cmd::timeline::tests::test_timeline_filter_by_status ... ok
+test cmd::timeline::tests::test_timeline_truncate_long_names ... ok
+test cmd::fs::tests::cat_big_file_found ... ok
+
+test result: ok. 47 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.86s
+

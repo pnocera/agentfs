@@ -1,0 +1,25 @@
+exe=F:\Tools\agentfs\cli\target\x86_64-pc-windows-msvc\debug\agentfs.exe
+id=completion_audit_direct
+db=F:\Tools\agentfs\.agentfs\completion_audit_direct.db
+drive=Z:
+Created agent filesystem: .agentfs\completion_audit_direct.db
+Agent ID: completion_audit_direct
+init_exit=0
+fs_write_exit=0
+mount_started_state=exited:1
+mounted=False
+
+stderr:
+Error: Failed to mount AgentFS NFS on Windows drive Z:. The built-in Windows Client for NFS did not accept the supported non-default-port forms for localhost port 2049. Tried:
+\\127.0.0.1\! -> Network Error - 53
+
+Type 'NET HELPMSG 53' for more information.
+\\127.0.0.1@2049\! -> Network Error - 53
+
+Type 'NET HELPMSG 53' for more information.
+\\127.0.0.1:2049\! -> Network Error - 53
+
+Type 'NET HELPMSG 53' for more information.
+
+
+stdout:

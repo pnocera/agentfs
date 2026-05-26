@@ -30,6 +30,11 @@ Windows mounts use unassigned drive letters such as `Z:` or `Z:\`, not existing
 directories. The Windows v1 port uses NFS; FUSE and WinFsp-native mounts are
 deferred.
 
+`agentfs mount` uses localhost TCP port 111 on Windows so the built-in Client
+for NFS can discover AgentFS's combined portmap, mount, and NFS RPC service. If
+another service owns port 111, such as Microsoft's NFS Server role or another
+portmapper, stop that service before mounting.
+
 `agentfs run` on Windows provides copy-on-write overlay execution only. It sets
 `AGENTFS_SANDBOX=windows-overlay-only` and is not a security sandbox.
 
@@ -179,6 +184,10 @@ Windows mount points must be unassigned drive letters. `--backend fuse` is not
 supported on Windows; use `--backend nfs`. The foreground mount process must
 remain running for the drive to stay mounted.
 
+Windows NFS mounts report permissive POSIX mode bits to the client so anonymous
+Windows NFS credentials can write to the AgentFS drive. Read-only POSIX modes in
+the database are not enforced through the Windows drive in v1.
+
 ### agentfs serve mcp
 
 Start an MCP (Model Context Protocol) server.
@@ -228,10 +237,17 @@ For non-default NFS ports, AgentFS probes both `\\127.0.0.1@PORT\!` and
 `Network Error 53`, verify that the Client for NFS optional feature can mount
 localhost exports on that machine.
 
-`agentfs mount` starts its internal Windows NFS server at port 2049 when that
-port is available, because the built-in Windows client handles the default NFS
-port more reliably than high localhost ports. The `11111` examples above apply
-to `agentfs serve nfs --port 11111` and other explicitly chosen ports.
+`agentfs mount` starts its internal Windows NFS server at port 111 when that
+port is available, because the built-in Windows client discovers AgentFS's
+combined portmap, mount, and NFS RPC service through the standard portmapper
+port. The `11111` examples above apply to `agentfs serve nfs --port 11111` and
+other explicitly chosen ports.
+
+The current NFS server does not implement `NFSPROC3_COMMIT`; Windows smoke logs
+may show that warning. Normal writes are persisted through the AgentFS request
+path and are verified after unmount in the manual smoke test, but v1 does not
+provide a stronger NFS COMMIT durability guarantee for client or network
+failure cases.
 
 ### agentfs sync
 

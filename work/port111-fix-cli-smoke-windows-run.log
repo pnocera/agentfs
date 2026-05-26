@@ -1,0 +1,30 @@
+exe=F:\Tools\agentfs\cli\target\x86_64-pc-windows-msvc\debug\agentfs.exe
+base=F:\Tools\agentfs\work\port111-run-base
+session=port111_fix_run
+[2m2026-05-26T11:39:53.167160Z[0m [33m WARN[0m [2magentfs::nfsserve::rpcwire[0m[2m:[0m Unknown RPC Program number 100021 != 100003
+Welcome to AgentFS!
+
+Windows run mode:
+  - F:\Tools\agentfs\work\port111-run-base is mounted copy-on-write at Z:\
+  - This is not a security sandbox. Other filesystem paths remain accessible.
+
+Session data: C:\Users\Pierre\.agentfs\run\port111_fix_run
+Environment: AGENTFS=1, AGENTFS_SANDBOX=windows-overlay-only
+
+[2m2026-05-26T11:39:53.199640Z[0m [33m WARN[0m [2magentfs::nfsserve::nfs_handlers[0m[2m:[0m Unimplemented message NFSPROC3_COMMIT
+
+Session: port111_fix_run
+
+To resume this session:
+  agentfs run --session port111_fix_run
+
+To see what changed:
+  agentfs diff port111_fix_run
+run_exit=0
+base_created_exists=False
+
+agentfs diff:
+Using agent: port111_fix_run
+Base: F:\Tools\agentfs\work\port111-run-base
+A f /created.txt
+diff_exit=0

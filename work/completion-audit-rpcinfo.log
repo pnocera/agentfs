@@ -1,0 +1,43 @@
+exe=F:\Tools\agentfs\cli\target\x86_64-pc-windows-msvc\debug\agentfs.exe
+Created agent filesystem: .agentfs\completion_audit_rpc.db
+Agent ID: completion_audit_rpc
+server_ready=True state=running
+
+rpcinfo -p 127.0.0.1:
+rpcinfo: RPC: Unable to send
+rpcinfo: can't contact portmapper.
+rpcinfo_exit=0
+
+showmount -e 127.0.0.1:
+RPC: Program unavailableRPC: Port mapper failure - RPC: Timed out.
+showmount_exit=8
+
+server stderr:
+Mode: direct AgentFS
+
+AgentFS NFS Server
+  Database: .agentfs\completion_audit_rpc.db
+  Listening: 127.0.0.1:2049
+  Export: /
+
+Mount from client:
+  Windows Client for NFS (cmd.exe):
+    %SystemRoot%\System32\mount.exe -o anon,nolock,casesensitive=yes,mtype=soft,timeout=8,retry=1 \\127.0.0.1\! Z:
+    %SystemRoot%\System32\mount.exe -o anon,nolock,casesensitive=yes,mtype=soft,timeout=8,retry=1 \\127.0.0.1@2049\! Z:
+    %SystemRoot%\System32\mount.exe -o anon,nolock,casesensitive=yes,mtype=soft,timeout=8,retry=1 \\127.0.0.1:2049\! Z:
+
+  Windows Client for NFS (PowerShell):
+    & $env:SystemRoot\System32\mount.exe -o anon,nolock,casesensitive=yes,mtype=soft,timeout=8,retry=1 \\127.0.0.1\! Z:
+    & $env:SystemRoot\System32\mount.exe -o anon,nolock,casesensitive=yes,mtype=soft,timeout=8,retry=1 \\127.0.0.1@2049\! Z:
+    & $env:SystemRoot\System32\mount.exe -o anon,nolock,casesensitive=yes,mtype=soft,timeout=8,retry=1 \\127.0.0.1:2049\! Z:
+
+  Unix client:
+    mount -t nfs -o vers=3,tcp,port=2049,mountport=2049,nolock 127.0.0.1:/ /mnt
+
+  If Windows returns Network Error 53, verify the Client for NFS can mount localhost exports on this machine.
+
+Press Ctrl+C to stop.
+
+
+
+server stdout:

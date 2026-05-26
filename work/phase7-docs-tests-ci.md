@@ -37,10 +37,9 @@ The CLI job uses `dtolnay/rust-toolchain@nightly` because the CLI crate pins
 nightly in `cli/rust-toolchain.toml`. The SDK job uses stable.
 
 It intentionally does not run a live `agentfs mount` or `agentfs run` smoke,
-because those require the Windows Client for NFS optional feature and a machine
-where localhost NFS mounts work. This local machine still hits the known
-Windows Client for NFS `Network Error 53` for localhost exports, so live mount
-acceptance remains manual and environment-dependent.
+because those require the Windows Client for NFS optional feature and a free
+local portmapper port. Live mount acceptance remains manual and
+environment-dependent.
 
 ## Existing Unit Coverage
 
@@ -96,5 +95,5 @@ The command sequence is documented as a two-terminal flow because the foreground
 NFS mount process must remain running while the drive is accessed.
 
 The manual also calls out that `agentfs mount` starts its internal Windows NFS
-server at port 2049 when available, while `agentfs serve nfs` examples may use
-an explicitly selected high port such as 11111.
+server at port 111 when available, while `agentfs serve nfs` examples may use an
+explicitly selected high port such as 11111.

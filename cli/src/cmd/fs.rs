@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use std::path::PathBuf;
 
 use agentfs_sdk::{AgentFSOptions, EncryptionConfig};
 use anyhow::{Context, Result as AnyhowResult};
@@ -197,7 +198,7 @@ fn path_exists_in_base(base_path: &str, rel_path: &str) -> bool {
 }
 
 pub async fn diff_filesystem(id_or_path: String) -> AnyhowResult<()> {
-    let options = AgentFSOptions::resolve(&id_or_path)?;
+    let options = resolve_diff_options(&id_or_path)?;
     eprintln!("Using agent: {}", id_or_path);
 
     let agent = open_agentfs(options).await?;
@@ -267,6 +268,33 @@ pub async fn diff_filesystem(id_or_path: String) -> AnyhowResult<()> {
     }
 
     Ok(())
+}
+
+fn resolve_diff_options(id_or_path: &str) -> AnyhowResult<AgentFSOptions> {
+    match AgentFSOptions::resolve(id_or_path) {
+        Ok(options) => Ok(options),
+        Err(resolve_err) => {
+            let Some(home) = dirs::home_dir() else {
+                return Err(resolve_err.into());
+            };
+            let delta_path = run_session_delta_path(home, id_or_path);
+            if delta_path.is_file() {
+                let path = delta_path
+                    .to_str()
+                    .context("Run session delta path contains non-UTF8 characters")?;
+                Ok(AgentFSOptions::with_path(path))
+            } else {
+                Err(resolve_err.into())
+            }
+        }
+    }
+}
+
+fn run_session_delta_path(home: PathBuf, session_id: &str) -> PathBuf {
+    home.join(".agentfs")
+        .join("run")
+        .join(session_id)
+        .join("delta.db")
 }
 
 #[cfg(test)]
