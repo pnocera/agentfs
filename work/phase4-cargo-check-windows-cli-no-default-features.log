@@ -1,0 +1,4 @@
+    Checking agentfs-sdk v0.6.4 (F:\Tools\agentfs\sdk\rust)
+    Checking agentfs v0.6.4 (F:\Tools\agentfs\cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.74s
+exit code 0

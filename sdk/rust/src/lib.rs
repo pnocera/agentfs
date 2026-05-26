@@ -16,7 +16,7 @@ use turso::{Builder, EncryptionOpts, Value};
 pub use turso::sync::{DatabaseSyncStats, PartialBootstrapStrategy, PartialSyncOpts};
 
 // Re-export filesystem types
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
 pub use filesystem::HostFS;
 pub use filesystem::{
     device_major, device_minor, make_device, BoxedFile, DirEntry, File, FileSystem,

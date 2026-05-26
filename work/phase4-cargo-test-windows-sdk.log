@@ -1,0 +1,92 @@
+   Compiling agentfs-sdk v0.6.4 (F:\Tools\agentfs\sdk\rust)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.25s
+     Running unittests src\lib.rs (target\x86_64-pc-windows-msvc\debug\deps\agentfs_sdk-e45382bf5e83d932.exe)
+
+running 76 tests
+test connection_pool::tests::test_connection_pool_basic ... ok
+test connection_pool::tests::test_connection_pool_timeout_error ... ok
+test filesystem::agentfs::tests::test_chmod_nonexistent_fails ... ok
+test filesystem::agentfs::tests::test_chmod_regular_file ... ok
+test filesystem::agentfs::tests::test_binary_data_with_null_bytes ... ok
+test filesystem::agentfs::tests::test_chmod_preserves_file_type ... ok
+test filesystem::agentfs::tests::test_chmod_symlink ... ok
+test connection_pool::tests::test_connection_pool_concurrent_waiters ... ok
+test connection_pool::tests::test_connection_pool_max_one ... ok
+test filesystem::agentfs::tests::test_chunk_ordering ... ok
+test filesystem::agentfs::tests::test_chunk_index_uniqueness ... ok
+test filesystem::agentfs::tests::test_chunk_ordering_in_database ... ok
+test filesystem::agentfs::tests::test_default_chunk_size ... ok
+test filesystem::agentfs::tests::test_chunk_size_accessor ... ok
+test filesystem::agentfs::tests::test_config_persistence ... ok
+test filesystem::agentfs::tests::test_delete_file_removes_all_chunks ... ok
+test filesystem::agentfs::tests::test_empty_file ... ok
+test filesystem::agentfs::tests::test_file_exactly_chunk_size ... ok
+test filesystem::agentfs::tests::test_file_one_byte_over_chunk_size ... ok
+test filesystem::agentfs::tests::test_file_smaller_than_chunk_size ... ok
+test filesystem::agentfs::tests::test_file_spanning_multiple_chunks ... ok
+test filesystem::agentfs::tests::test_multiple_files_different_sizes ... ok
+test filesystem::agentfs::tests::test_overwrite_existing_file ... ok
+test filesystem::agentfs::tests::test_overwrite_with_larger_file ... ok
+test filesystem::agentfs::tests::test_pread_across_chunks ... ok
+test filesystem::agentfs::tests::test_pread_nonexistent_file ... ok
+test filesystem::agentfs::tests::test_pread_basic ... ok
+test filesystem::agentfs::tests::test_pread_past_eof ... ok
+test filesystem::agentfs::tests::test_pread_pwrite_roundtrip ... ok
+test filesystem::agentfs::tests::test_pwrite_across_chunks ... ok
+test filesystem::agentfs::tests::test_pwrite_basic ... ok
+test filesystem::agentfs::tests::test_pwrite_creates_file ... ok
+test filesystem::agentfs::tests::test_pwrite_extend_file ... ok
+test filesystem::agentfs::tests::test_rename_directory_into_own_subtree_fails ... ok
+test filesystem::agentfs::tests::test_rename_directory ... ok
+test filesystem::agentfs::tests::test_rename_directory_to_file_fails ... ok
+test filesystem::agentfs::tests::test_rename_file_same_directory ... ok
+test filesystem::agentfs::tests::test_rename_file_to_directory_fails ... ok
+test filesystem::agentfs::tests::test_rename_file_to_different_directory ... ok
+test filesystem::agentfs::tests::test_rename_nonexistent_source_fails ... ok
+test filesystem::agentfs::tests::test_rename_root_fails ... ok
+test filesystem::agentfs::tests::test_rename_overwrite_existing_file ... ok
+test filesystem::agentfs::tests::test_rename_to_root_fails ... ok
+test filesystem::agentfs::tests::test_rename_overwrite_nonempty_directory_fails ... ok
+test filesystem::agentfs::tests::test_truncate_across_chunk_boundary ... ok
+test filesystem::agentfs::tests::test_rename_updates_ctime ... ok
+test filesystem::agentfs::tests::test_roundtrip_byte_for_byte ... ok
+test filesystem::hostfs_windows::tests::test_hostfs_windows_create_file_existing_truncates ... ok
+test filesystem::agentfs::tests::test_truncate_at_chunk_boundary ... ok
+test filesystem::hostfs_windows::tests::test_hostfs_windows_basic ... ok
+test filesystem::hostfs_windows::tests::test_hostfs_windows_mkdir_readdir_plus ... ok
+test filesystem::hostfs_windows::tests::test_hostfs_windows_mutations ... ok
+test filesystem::hostfs_windows::tests::test_hostfs_windows_rename_missing_source_preserves_destination ... ok
+test filesystem::agentfs::tests::test_truncate_extend_file ... ok
+test filesystem::agentfs::tests::test_truncate_nonexistent_file ... ok
+test filesystem::hostfs_windows::tests::test_hostfs_windows_stable_identity ... ok
+test filesystem::tests::device_encoding_round_trips_major_minor ... ok
+test filesystem::hostfs_windows::tests::test_hostfs_windows_rename_type_mismatch_preserves_destination ... ok
+test filesystem::hostfs_windows::tests::test_hostfs_windows_rename_overwrite_file ... ok
+test filesystem::agentfs::tests::test_truncate_smaller_within_chunk ... ok
+test filesystem::agentfs::tests::test_truncate_to_zero ... ok
+test tests::test_agentfs_creation ... ok
+test tests::test_resolve_existing_file_path ... ok
+test tests::test_agentfs_with_id ... ok
+test tests::test_resolve_memory ... ok
+test tests::test_resolve_invalid_agent_id ... ok
+test tests::test_filesystem_operations ... ok
+test filesystem::overlayfs::windows_tests::test_windows_overlay_create_file_in_base_dir ... ok
+test tests::test_resolve_nonexistent_agent ... ok
+test tests::test_resolve_valid_agent_id_with_existing_db ... ok
+test tests::test_kv_operations ... ok
+test filesystem::overlayfs::windows_tests::test_windows_overlay_copy_on_write_file ... ok
+test tests::test_encrypted_database_creation ... ok
+test tests::test_resolve_valid_agent_id_formats ... ok
+test tests::test_tool_calls ... ok
+test filesystem::agentfs::tests::test_very_large_file ... ok
+
+test result: ok. 76 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.73s
+
+   Doc-tests agentfs_sdk
+
+running 1 test
+test src\lib.rs - AgentFS::open (line 280) - compile ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+exit code 0

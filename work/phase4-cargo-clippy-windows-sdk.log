@@ -1,0 +1,117 @@
+    Checking agentfs-sdk v0.6.4 (F:\Tools\agentfs\sdk\rust)
+warning: unused import: `FileSystem`
+ --> benches\overlayfs.rs:5:40
+  |
+5 | use agentfs_sdk::filesystem::{AgentFS, FileSystem, HostFS, OverlayFS};
+  |                                        ^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0599]: no method named `remove` found for struct `agentfs_sdk::OverlayFS` in the current scope
+  --> benches\overlayfs.rs:43:37
+   |
+43 |                     let _ = overlay.remove("/test.txt").await;
+   |                                     ^^^^^^ method not found in `agentfs_sdk::OverlayFS`
+
+For more information about this error, try `rustc --explain E0599`.
+warning: `agentfs-sdk` (bench "overlayfs") generated 1 warning
+error: could not compile `agentfs-sdk` (bench "overlayfs") due to 1 previous error; 1 warning emitted
+warning: build failed, waiting for other jobs to finish...
+error[E0061]: this method takes 5 arguments but 4 arguments were supplied
+   --> benches\workload.rs:310:29
+    |
+310 |             let _ = overlay.create_file(path, 0o100644, 0, 0).await;
+    |                             ^^^^^^^^^^^----------------------
+    |                                        ||     |
+    |                                        ||     expected `&str`, found `{integer}`
+    |                                        |expected `i64`, found `&str`
+    |                                        argument #5 of type `u32` is missing
+    |
+note: method defined here
+   --> F:\Tools\agentfs\sdk\rust\src\filesystem\mod.rs:292:14
+    |
+292 |     async fn create_file(
+    |              ^^^^^^^^^^^
+help: did you mean
+    |
+310 -             let _ = overlay.create_file(path, 0o100644, 0, 0).await;
+310 +             let _ = overlay.create_file(0o100644, path, 0, 0, /* u32 */).await;
+    |
+
+error[E0599]: no method named `lstat` found for reference `&agentfs_sdk::OverlayFS` in the current scope
+   --> benches\workload.rs:313:29
+    |
+313 |             let _ = overlay.lstat(path).await;
+    |                             ^^^^^ method not found in `&agentfs_sdk::OverlayFS`
+
+error[E0061]: this method takes 5 arguments but 3 arguments were supplied
+   --> benches\workload.rs:316:29
+    |
+316 |             let _ = overlay.mkdir(path, 0, 0).await;
+    |                             ^^^^^------------
+    |                                  ||     |
+    |                                  ||     expected `&str`, found `{integer}`
+    |                                  |expected `i64`, found `&str`
+    |                                  two arguments of type `u32` and `u32` are missing
+    |
+note: method defined here
+   --> F:\Tools\agentfs\sdk\rust\src\filesystem\mod.rs:280:14
+    |
+280 |     async fn mkdir(
+    |              ^^^^^
+help: did you mean
+    |
+316 -             let _ = overlay.mkdir(path, 0, 0).await;
+316 +             let _ = overlay.mkdir(0, path, 0, /* u32 */, /* u32 */).await;
+    |
+
+error[E0061]: this method takes 2 arguments but 1 argument was supplied
+   --> benches\workload.rs:319:29
+    |
+319 |             let _ = overlay.open(path).await;
+    |                             ^^^^------
+    |                                 ||
+    |                                 |expected `i64`, found `&str`
+    |                                 argument #2 of type `i32` is missing
+    |
+note: method defined here
+   --> F:\Tools\agentfs\sdk\rust\src\filesystem\mod.rs:275:14
+    |
+275 |     async fn open(&self, ino: i64, flags: i32) -> Result<BoxedFile>;
+    |              ^^^^
+help: provide the argument
+    |
+319 -             let _ = overlay.open(path).await;
+319 +             let _ = overlay.open(/* i64 */, /* i32 */).await;
+    |
+
+error[E0308]: mismatched types
+   --> benches\workload.rs:322:42
+    |
+322 |             let _ = overlay.readdir_plus(path).await;
+    |                             ------------ ^^^^ expected `i64`, found `&str`
+    |                             |
+    |                             arguments to this method are incorrect
+    |
+note: method defined here
+   --> F:\Tools\agentfs\sdk\rust\src\filesystem\mod.rs:258:14
+    |
+258 |     async fn readdir_plus(&self, ino: i64) -> Result<Option<Vec<DirEntry>>>;
+    |              ^^^^^^^^^^^^
+
+error[E0599]: no method named `stat` found for reference `&agentfs_sdk::OverlayFS` in the current scope
+   --> benches\workload.rs:325:29
+    |
+325 |             let _ = overlay.stat(path).await;
+    |                             ^^^^
+    |
+help: there is a method `statfs` with a similar name, but with different arguments
+   --> F:\Tools\agentfs\sdk\rust\src\filesystem\mod.rs:348:5
+    |
+348 |     async fn statfs(&self) -> Result<FilesystemStats>;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Some errors have detailed explanations: E0061, E0308, E0599.
+For more information about an error, try `rustc --explain E0061`.
+error: could not compile `agentfs-sdk` (bench "workload") due to 6 previous errors
+exit code 101

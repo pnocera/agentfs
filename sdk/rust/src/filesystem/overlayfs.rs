@@ -2832,3 +2832,66 @@ mod tests {
         Ok(())
     }
 }
+
+#[cfg(all(test, target_os = "windows"))]
+mod windows_tests {
+    use super::*;
+    use crate::{HostFS, DEFAULT_FILE_MODE, OPEN_READONLY, OPEN_READWRITE};
+    use std::sync::Arc;
+    use tempfile::tempdir;
+
+    async fn create_test_overlay() -> Result<(OverlayFS, tempfile::TempDir, tempfile::TempDir)> {
+        let base_dir = tempdir()?;
+        std::fs::write(base_dir.path().join("base.txt"), b"base content")?;
+        std::fs::create_dir(base_dir.path().join("dir"))?;
+
+        let base = Arc::new(HostFS::new(base_dir.path())?);
+
+        let delta_dir = tempdir()?;
+        let db_path = delta_dir.path().join("delta.db");
+        let delta = AgentFS::new(db_path.to_str().unwrap()).await?;
+
+        let overlay = OverlayFS::new(base, delta);
+        overlay.init(base_dir.path().to_str().unwrap()).await?;
+
+        Ok((overlay, base_dir, delta_dir))
+    }
+
+    #[tokio::test]
+    async fn test_windows_overlay_copy_on_write_file() -> Result<()> {
+        let (overlay, base_dir, _delta_dir) = create_test_overlay().await?;
+
+        let stats = overlay.lookup(ROOT_INO, "base.txt").await?.unwrap();
+        assert!(stats.is_file());
+
+        let file = overlay.open(stats.ino, OPEN_READWRITE).await?;
+        file.pwrite(0, b"modified").await?;
+
+        let overlay_file = overlay.open(stats.ino, OPEN_READONLY).await?;
+        assert_eq!(overlay_file.pread(0, 100).await?, b"modifiedtent");
+
+        let base_content = std::fs::read(base_dir.path().join("base.txt"))?;
+        assert_eq!(base_content, b"base content");
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_windows_overlay_create_file_in_base_dir() -> Result<()> {
+        let (overlay, _base_dir, _delta_dir) = create_test_overlay().await?;
+
+        let dir_stats = overlay.lookup(ROOT_INO, "dir").await?.unwrap();
+        let (new_stats, file) = overlay
+            .create_file(dir_stats.ino, "new.txt", DEFAULT_FILE_MODE, 0, 0)
+            .await?;
+        file.pwrite(0, b"created").await?;
+
+        let lookup = overlay.lookup(dir_stats.ino, "new.txt").await?.unwrap();
+        assert_eq!(lookup.ino, new_stats.ino);
+
+        let read_file = overlay.open(lookup.ino, OPEN_READONLY).await?;
+        assert_eq!(read_file.pread(0, 100).await?, b"created");
+
+        Ok(())
+    }
+}

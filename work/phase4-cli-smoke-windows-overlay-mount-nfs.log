@@ -1,0 +1,27 @@
+WorkingDirectory: F:\Tools\agentfs
+Init: F:\Tools\agentfs\cli\target\x86_64-pc-windows-msvc\debug\agentfs.exe init phase4-overlay-smoke --force --base F:\Tools\agentfs\work\phase4-overlay-base-smoke
+init exit code 0
+--- init stdout ---
+--- init stderr ---
+Created overlay filesystem: .agentfs\phase4-overlay-smoke.db
+Agent ID: phase4-overlay-smoke
+Base: F:\Tools\agentfs\work\phase4-overlay-base-smoke
+Started: F:\Tools\agentfs\cli\target\x86_64-pc-windows-msvc\debug\agentfs.exe mount phase4-overlay-smoke Z: --backend nfs -f
+mount process exited with code 1
+--- mount stdout ---
+--- mount stderr ---
+Using overlay filesystem with base: \\?\F:\Tools\agentfs\work\phase4-overlay-base-smoke
+Error: Failed to mount AgentFS NFS on Windows drive Z:. The built-in Windows Client for NFS did not accept the supported non-default-port forms for localhost port 2049. Tried:
+\\127.0.0.1\! -> Network Error - 53
+
+Type 'NET HELPMSG 53' for more information.
+\\127.0.0.1@2049\! -> Network Error - 53
+
+Type 'NET HELPMSG 53' for more information.
+\\127.0.0.1:2049\! -> Network Error - 53
+
+Type 'NET HELPMSG 53' for more information.
+--- cleanup ---
+
+Drive Z is not an NFS mounted drive
+umount exit code 39

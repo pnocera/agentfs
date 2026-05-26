@@ -1,5 +1,5 @@
 use agentfs_sdk::{error::Error as SdkError, AgentFSOptions, FileSystem};
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
 use agentfs_sdk::{HostFS, OverlayFS};
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 use anyhow::Context;
@@ -273,23 +273,13 @@ async fn mount_nfs_backend(args: MountArgs) -> Result<()> {
         }
     }; // conn is dropped here
 
-    let fs: Arc<Mutex<dyn FileSystem + Send>> = if let Some(_base_path) = base_path {
-        #[cfg(target_os = "windows")]
-        {
-            anyhow::bail!(
-                "overlay-backed mounts require Windows HostFS support; direct AgentFS mounts are supported"
-            );
-        }
-
-        #[cfg(not(target_os = "windows"))]
-        {
-            // Create OverlayFS with HostFS base, loading existing whiteouts
-            eprintln!("Using overlay filesystem with base: {}", _base_path);
-            let hostfs = HostFS::new(&_base_path)?;
-            let overlay = OverlayFS::new(Arc::new(hostfs), agentfs.fs);
-            overlay.load().await?; // Load persisted whiteouts and origin mappings
-            Arc::new(Mutex::new(overlay)) as Arc<Mutex<dyn FileSystem + Send>>
-        }
+    let fs: Arc<Mutex<dyn FileSystem + Send>> = if let Some(base_path) = base_path {
+        // Create OverlayFS with HostFS base, loading existing whiteouts
+        eprintln!("Using overlay filesystem with base: {}", base_path);
+        let hostfs = HostFS::new(&base_path)?;
+        let overlay = OverlayFS::new(Arc::new(hostfs), agentfs.fs);
+        overlay.load().await?; // Load persisted whiteouts and origin mappings
+        Arc::new(Mutex::new(overlay)) as Arc<Mutex<dyn FileSystem + Send>>
     } else {
         // Plain AgentFS
         Arc::new(Mutex::new(agentfs.fs)) as Arc<Mutex<dyn FileSystem + Send>>
