@@ -130,26 +130,27 @@ pub enum Command {
         #[command(subcommand)]
         command: FsCommand,
     },
-    /// Run a command in the sandboxed environment.
+    /// Run a command with an AgentFS copy-on-write working directory.
     ///
-    /// By default, uses FUSE+overlay with Linux user and mount namespaces for isolation.
-    /// The overlay uses the host filesystem as a read-only base and stores
-    /// all changes in an AgentFS-backed delta layer.
+    /// Linux/macOS add platform sandboxing where available. Windows v1 uses
+    /// overlay-only execution and is not a security sandbox.
     Run {
-        /// Allow write access to additional directories (can be specified multiple times)
+        /// Allow write access to additional directories (can be specified multiple times).
+        /// Ignored on Windows v1 because no OS sandbox is enforced.
         #[arg(long = "allow", value_name = "PATH")]
         allow: Vec<PathBuf>,
 
-        /// Disable default allowed directories (~/.config, ~/.cache, ~/.local, ~/.claude, etc.)
+        /// Disable default allowed directories (~/.config, ~/.cache, ~/.local, ~/.claude, etc.).
+        /// No effect on Windows v1.
         #[arg(long = "no-default-allows")]
         no_default_allows: bool,
 
-        /// Use experimental ptrace-based syscall interception sandbox
+        /// Use experimental ptrace-based syscall interception sandbox (Linux only).
         #[arg(long = "experimental-sandbox")]
         experimental_sandbox: bool,
 
         /// Enable strace-like output for system calls
-        /// Only used with --experimental-sandbox
+        /// Only used with --experimental-sandbox on Linux.
         #[arg(long = "strace")]
         strace: bool,
 
@@ -159,8 +160,8 @@ pub enum Command {
         #[arg(long = "session", value_name = "ID")]
         session: Option<String>,
 
-        /// Allow other system users to access this mount (requires /etc/fuse.conf
-        /// user_allow_other; use cautiously)
+        /// Allow other system users to access this mount (Linux/FUSE only; ignored on Windows v1).
+        /// Requires /etc/fuse.conf user_allow_other on Linux.
         #[arg(long = "system")]
         system: bool,
 
@@ -174,7 +175,7 @@ pub enum Command {
         #[arg(long, env = "AGENTFS_CIPHER")]
         cipher: Option<String>,
 
-        /// Command to execute (defaults to bash on Linux, zsh on macOS)
+        /// Command to execute (defaults to bash on Linux, zsh on macOS, cmd.exe on Windows)
         command: Option<PathBuf>,
 
         /// Arguments for the command

@@ -3,6 +3,7 @@
 //! Dispatches to platform-specific implementations:
 //! - Linux: FUSE + namespace sandbox (or experimental ptrace)
 //! - Darwin: NFS + sandbox-exec
+//! - Windows: NFS + overlay-only copy-on-write execution
 
 use anyhow::Result;
 use std::path::PathBuf;

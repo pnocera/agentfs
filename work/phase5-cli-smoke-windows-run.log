@@ -1,0 +1,17 @@
+WorkingDirectory: F:\Tools\agentfs\work\phase5-run-base-smoke
+Command: F:\Tools\agentfs\cli\target\x86_64-pc-windows-msvc\debug\agentfs.exe run --session phase5-run-smoke cmd.exe /c 'echo hello>created.txt'
+Error: Failed to mount AgentFS NFS on Windows drive Z:. The built-in Windows Client for NFS did not accept the supported non-default-port forms for localhost port 2049. Tried:
+\\127.0.0.1\! -> Network Error - 53
+
+Type 'NET HELPMSG 53' for more information.
+\\127.0.0.1@2049\! -> Network Error - 53
+
+Type 'NET HELPMSG 53' for more information.
+\\127.0.0.1:2049\! -> Network Error - 53
+
+Type 'NET HELPMSG 53' for more information.
+run exit code 1
+base created.txt exists: False
+cleanup:
+removed C:\Users\Pierre\.agentfs\run\phase5-run-smoke
+removed F:\Tools\agentfs\work\phase5-run-base-smoke

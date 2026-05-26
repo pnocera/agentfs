@@ -1,0 +1,45 @@
+Run a command with an AgentFS copy-on-write working directory.
+
+Linux/macOS add platform sandboxing where available. Windows v1 uses overlay-only execution and is not a security sandbox.
+
+Usage: agentfs.exe run [OPTIONS] [COMMAND] [ARGS]...
+
+Arguments:
+  [COMMAND]
+          Command to execute (defaults to bash on Linux, zsh on macOS, cmd.exe on Windows)
+
+  [ARGS]...
+          Arguments for the command
+
+Options:
+      --allow <PATH>
+          Allow write access to additional directories (can be specified multiple times). Ignored on Windows v1 because no OS sandbox is enforced
+
+      --no-default-allows
+          Disable default allowed directories (~/.config, ~/.cache, ~/.local, ~/.claude, etc.). No effect on Windows v1
+
+      --experimental-sandbox
+          Use experimental ptrace-based syscall interception sandbox (Linux only)
+
+      --strace
+          Enable strace-like output for system calls Only used with --experimental-sandbox on Linux
+
+      --session <ID>
+          Session identifier for sharing delta layer across multiple runs. If not provided, a unique session ID is generated for each run. Use the same session ID to share the delta layer between runs
+
+      --system
+          Allow other system users to access this mount (Linux/FUSE only; ignored on Windows v1). Requires /etc/fuse.conf user_allow_other on Linux
+
+      --key <KEY>
+          Hex-encoded encryption key for the delta layer. Enables local encryption when provided
+          
+          [env: AGENTFS_KEY=]
+
+      --cipher <CIPHER>
+          Cipher algorithm for encryption (required with --key). Options: aegis128l, aegis128x2, aegis128x4, aegis256, aegis256x2, aegis256x4, aes128gcm, aes256gcm
+          
+          [env: AGENTFS_CIPHER=]
+
+  -h, --help
+          Print help (see a summary with '-h')
+exit code 0

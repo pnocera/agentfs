@@ -1,0 +1,13 @@
+   Compiling libz-sys v1.1.25
+   Compiling libgit2-sys v0.18.3+1.9.2
+   Compiling git2 v0.20.4
+   Compiling built v0.7.7
+   Compiling turso_core v0.4.4
+    Checking turso_sync_engine v0.4.4
+    Checking turso_sdk_kit v0.4.4
+    Checking turso_sync_sdk_kit v0.4.4
+    Checking turso v0.4.4
+    Checking agentfs-sdk v0.6.4 (F:\Tools\agentfs\sdk\rust)
+    Checking agentfs v0.6.4 (F:\Tools\agentfs\cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 45.90s
+exit code 0

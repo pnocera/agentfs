@@ -351,13 +351,17 @@ fn reset_sigpipe() {
 fn reset_sigpipe() {}
 
 /// Returns the default shell for the current platform.
-/// Linux uses bash, macOS uses zsh.
+/// Linux uses bash, macOS uses zsh, and Windows uses cmd.exe.
 fn default_shell() -> std::path::PathBuf {
+    #[cfg(target_os = "windows")]
+    {
+        std::path::PathBuf::from("cmd.exe")
+    }
     #[cfg(target_os = "macos")]
     {
         std::path::PathBuf::from("zsh")
     }
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(all(not(target_os = "macos"), not(target_os = "windows")))]
     {
         std::path::PathBuf::from("bash")
     }

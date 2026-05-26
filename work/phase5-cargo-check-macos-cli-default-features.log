@@ -1,0 +1,5 @@
+ Downloading crates ...
+  Downloaded num_threads v0.1.7
+   Compiling agentfs v0.6.4 (F:\Tools\agentfs\cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.96s
+exit code 0

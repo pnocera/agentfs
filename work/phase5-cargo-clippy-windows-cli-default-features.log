@@ -1,0 +1,21 @@
+    Checking agentfs v0.6.4 (F:\Tools\agentfs\cli)
+warning: redundant reference in `format!` argument
+   --> src\cmd\init.rs:109:55
+    |
+109 |     let db_path = agentfs_dir().join(format!("{}.db", &id));
+    |                                                       ^^^ help: remove the redundant `&`: `id`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#useless_borrows_in_formatting
+    = note: `#[warn(clippy::useless_borrows_in_formatting)]` on by default
+
+warning: redundant reference in `writeln!` argument
+   --> src\cmd\ps.rs:219:17
+    |
+219 |                 &session.session_id,
+    |                 ^^^^^^^^^^^^^^^^^^^ help: remove the redundant `&`: `session.session_id`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#useless_borrows_in_formatting
+
+warning: `agentfs` (lib) generated 2 warnings (run `cargo clippy --fix --lib -p agentfs -- ` to apply 2 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.60s
+exit code 0
